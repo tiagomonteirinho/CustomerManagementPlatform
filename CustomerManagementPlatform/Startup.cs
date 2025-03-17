@@ -1,13 +1,12 @@
+using CustomerManagementPlatform.Data;
+using CustomerManagementPlatform.Data.Entities;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace CustomerManagementPlatform
 {
@@ -23,6 +22,25 @@ namespace CustomerManagementPlatform
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddIdentity<User, IdentityRole>(cfg =>
+            {
+                cfg.User.RequireUniqueEmail = true;
+                cfg.Password.RequiredLength = 6;
+                cfg.Password.RequireDigit = false;
+                cfg.Password.RequireUppercase = false;
+                cfg.Password.RequireLowercase = false;
+                cfg.Password.RequiredUniqueChars = 0;
+                cfg.Password.RequireNonAlphanumeric = false;
+            }).AddEntityFrameworkStores<DataContext>();
+
+            services.AddDbContext<DataContext>(cfg =>
+            {
+                cfg.UseSqlServer(this.Configuration.GetConnectionString("LocalConnectionString"));
+            });
+
+            services.AddTransient<DataSeed>();
+            services.AddScoped<IUserRepository, UserRepository>();
+
             services.AddControllersWithViews();
         }
 
@@ -44,6 +62,7 @@ namespace CustomerManagementPlatform
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
