@@ -1,5 +1,6 @@
 using CustomerManagementPlatform.Data;
 using CustomerManagementPlatform.Data.Entities;
+using CustomerManagementPlatform.Helpers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -40,6 +41,7 @@ namespace CustomerManagementPlatform
 
             services.AddTransient<DataSeed>();
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IAccountHelper, AccountHelper>();
 
             services.AddControllersWithViews();
         }

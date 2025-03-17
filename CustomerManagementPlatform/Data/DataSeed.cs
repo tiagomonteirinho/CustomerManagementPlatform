@@ -21,14 +21,14 @@ namespace CustomerManagementPlatform.Data
         {
             await _context.Database.EnsureCreatedAsync();
 
-            var user = await _userRepository.GetUserByEmailAsync("admin@mail.com");
+            var user = await _userRepository.GetUserByEmailAsync("admin@mail");
             if (user == null)
             {
                 user = new User
                 {
-                    FullName = "Tiago Monteirinho",
-                    Email = "admin@mail.com",
-                    UserName = "admin@mail.com",
+                    FullName = "Admin",
+                    Email = "admin@mail",
+                    UserName = "admin@mail",
                 };
 
                 var result = await _userRepository.AddUserAsync(user, "123456");
