@@ -4,8 +4,14 @@ using CustomerManagementPlatform.Helpers;
 using CustomerManagementPlatform.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System;
 using System.Linq;
+using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 
 namespace CustomerManagementPlatform.Controllers
 {
@@ -13,11 +19,15 @@ namespace CustomerManagementPlatform.Controllers
     {
         private readonly IAccountHelper _accountHelper;
         private readonly IUserRepository _userRepository;
+        private readonly IConfiguration _configuration;
+        private readonly IMailHelper _mailHelper;
 
-        public AccountController(IAccountHelper accountHelper, IUserRepository userRepository)
+        public AccountController(IAccountHelper accountHelper, IUserRepository userRepository, IConfiguration configuration, IMailHelper mailHelper)
         {
             _accountHelper = accountHelper;
             _userRepository = userRepository;
+            _configuration = configuration;
+            _mailHelper = mailHelper;
         }
 
         public IActionResult Login()
@@ -36,6 +46,13 @@ namespace CustomerManagementPlatform.Controllers
             if (!ModelState.IsValid)
             {
                 ViewBag.ErrorMessage = "Invalid login attempt.";
+                return View(model);
+            }
+
+            var user = await _userRepository.GetByEmailAsync(model.Email);
+            if (user == null)
+            {
+                ViewBag.ErrorMessage = "Could not find that email address.";
                 return View(model);
             }
 
@@ -69,7 +86,7 @@ namespace CustomerManagementPlatform.Controllers
                 return View(model);
             }
 
-            var user = await _userRepository.GetUserByEmailAsync(model.Email);
+            var user = await _userRepository.GetByEmailAsync(model.Email);
             if (user != null)
             {
                 ViewBag.ErrorMessage = "That email is already being used.";
@@ -83,7 +100,7 @@ namespace CustomerManagementPlatform.Controllers
                 UserName = model.Email,
             };
 
-            var result = await _userRepository.AddUserAsync(user, model.Password);
+            var result = await _userRepository.CreateAsync(user, model.Password);
             if (result != IdentityResult.Success)
             {
                 ViewBag.ErrorMessage = "Could not register user account.";
@@ -109,7 +126,7 @@ namespace CustomerManagementPlatform.Controllers
 
         public async Task<IActionResult> ChangeDetails()
         {
-            var user = await _userRepository.GetUserByEmailAsync(User.Identity.Name);
+            var user = await _userRepository.GetByEmailAsync(User.Identity.Name);
             var model = new ChangeDetailsViewModel();
             if (user != null)
             {
@@ -128,7 +145,7 @@ namespace CustomerManagementPlatform.Controllers
                 return View(model);
             }
 
-            var user = await _userRepository.GetUserByEmailAsync(this.User.Identity.Name);
+            var user = await _userRepository.GetByEmailAsync(User.Identity.Name);
             if (user == null)
             {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
@@ -163,7 +180,7 @@ namespace CustomerManagementPlatform.Controllers
         {
             if (ModelState.IsValid)
             {
-                var user = await _userRepository.GetUserByEmailAsync(this.User.Identity.Name);
+                var user = await _userRepository.GetByEmailAsync(User.Identity.Name);
                 if (user == null)
                 {
                     return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
@@ -179,6 +196,117 @@ namespace CustomerManagementPlatform.Controllers
                 ViewBag.ErrorMessage = result.Errors.FirstOrDefault().Description;
             }
 
+            return View();
+        }
+        
+        [HttpPost]
+        public async Task<IActionResult> GenerateApiToken([FromBody] LoginViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = await _userRepository.GetByEmailAsync(model.Email);
+                if (user == null)
+                {
+                    return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
+                }
+
+                var result = await _accountHelper.ValidatePasswordAsync(user, model.Password);
+                if (result.Succeeded)
+                {
+                    var claims = new[]
+                    {
+                        new Claim(JwtRegisteredClaimNames.Sub, user.Email),
+                        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                    };
+
+                    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Tokens:Key"]));
+                    var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+                    var token = new JwtSecurityToken
+                    (
+                        _configuration["Tokens:Issuer"],
+                        _configuration["Tokens:Audience"],
+                        claims,
+                        expires: DateTime.UtcNow.AddDays(15),
+                        signingCredentials: credentials
+                    );
+
+                    var results = new
+                    {
+                        token = new JwtSecurityTokenHandler().WriteToken(token),
+                        expiration = token.ValidTo,
+                    };
+
+                    return Created(string.Empty, results);
+                }
+            }
+
+            return BadRequest();
+        }
+
+        public IActionResult SendPasswordResetEmail()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SendPasswordResetEmail(SendPasswordResetEmailViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = await _userRepository.GetByEmailAsync(model.Email);
+                if (user == null)
+                {
+                    ViewBag.ErrorMessage = "Email address not found.";
+                    return View(model);
+                }
+
+                var token = await _accountHelper.GeneratePasswordResetTokenAsync(user);
+                var tokenUrl = Url.Action(
+                    "ResetPassword",
+                    "Account",
+                    new { token },
+                    protocol: HttpContext.Request.Scheme
+                );
+
+                bool emailSent = _mailHelper.SendEmail(user.Email, "Password reset", $"<h2>Password reset</h2>"
+                    + $"To reset your password, please update it <a href=\"{tokenUrl}\" style=\"color: blue;\">here</a>.");
+
+                if (!emailSent)
+                {
+                    ViewBag.ErrorMessage = "Could not send password reset email.";
+                    return View(model);
+                }
+
+                ViewBag.SuccessMessage = "Instructions to reset your password have been sent to your email address.";
+                return View();
+            }
+
+            return View(model);
+        }
+
+        public IActionResult ResetPassword(string token)
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
+        {
+            var user = await _userRepository.GetByEmailAsync(model.Email);
+            if (user == null)
+            {
+                ViewBag.ErrorMessage = "Email address not found.";
+                return View(model);
+            }
+
+            var result = await _accountHelper.ResetPasswordAsync(user, model.Token, model.NewPassword);
+            if (!result.Succeeded)
+            {
+                ViewBag.ErrorMessage = "Could not reset password.";
+                return View(model);
+            }
+
+            ViewBag.SuccessMessage = "Password updated successfully!";
             return View();
         }
     }

@@ -21,7 +21,7 @@ namespace CustomerManagementPlatform.Data
         {
             await _context.Database.EnsureCreatedAsync();
 
-            var user = await _userRepository.GetUserByEmailAsync("admin@mail");
+            var user = await _userRepository.GetByEmailAsync("admin@mail");
             if (user == null)
             {
                 user = new User
@@ -31,7 +31,7 @@ namespace CustomerManagementPlatform.Data
                     UserName = "admin@mail",
                 };
 
-                var result = await _userRepository.AddUserAsync(user, "123456");
+                var result = await _userRepository.CreateAsync(user, "123456");
                 if (result != IdentityResult.Success)
                 {
                     var errors = string.Join(", ", result.Errors.Select(e => e.Description));

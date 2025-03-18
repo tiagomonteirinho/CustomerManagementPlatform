@@ -6,8 +6,10 @@ namespace CustomerManagementPlatform.Data
 {
     public interface IUserRepository
     {
-        Task<User> GetUserByEmailAsync(string email);
+        Task<User> GetByEmailAsync(string email);
 
-        Task<IdentityResult> AddUserAsync(User user, string password);
+        Task<User> GetByIdAsync(string id);
+
+        Task<IdentityResult> CreateAsync(User user, string password);
     }
 }

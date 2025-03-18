@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace CustomerManagementPlatform
 {
@@ -25,6 +27,7 @@ namespace CustomerManagementPlatform
         {
             services.AddIdentity<User, IdentityRole>(cfg =>
             {
+                cfg.Tokens.AuthenticatorTokenProvider = TokenOptions.DefaultAuthenticatorProvider;
                 cfg.User.RequireUniqueEmail = true;
                 cfg.Password.RequiredLength = 6;
                 cfg.Password.RequireDigit = false;
@@ -32,16 +35,29 @@ namespace CustomerManagementPlatform
                 cfg.Password.RequireLowercase = false;
                 cfg.Password.RequiredUniqueChars = 0;
                 cfg.Password.RequireNonAlphanumeric = false;
-            }).AddEntityFrameworkStores<DataContext>();
+            }).AddDefaultTokenProviders().AddEntityFrameworkStores<DataContext>();
+
+            services.AddAuthentication()
+                .AddCookie()
+                .AddJwtBearer(cfg =>
+                {
+                    cfg.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidIssuer = Configuration["Tokens:Issuer"],
+                        ValidAudience = Configuration["Tokens:Audience"],
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Tokens:Key"]))
+                    };
+                });
 
             services.AddDbContext<DataContext>(cfg =>
             {
-                cfg.UseSqlServer(this.Configuration.GetConnectionString("LocalConnectionString"));
+                cfg.UseSqlServer(Configuration.GetConnectionString("LocalConnectionString"));
             });
 
             services.AddTransient<DataSeed>();
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IAccountHelper, AccountHelper>();
+            services.AddScoped<IMailHelper, MailHelper>();
 
             services.ConfigureApplicationCookie(cfg =>
             {
