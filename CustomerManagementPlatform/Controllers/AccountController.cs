@@ -38,16 +38,16 @@ namespace CustomerManagementPlatform.Controllers
                 var result = await _accountHelper.LoginAsync(model);
                 if (result.Succeeded)
                 {
-                    if (this.Request.Query.Keys.Contains("ReturnUrl"))
+                    if (Request.Query.Keys.Contains("ReturnUrl"))
                     {
-                        return Redirect(this.Request.Query["ReturnUrl"].First());
+                        return Redirect(Request.Query["ReturnUrl"].First());
                     }
 
-                    return this.RedirectToAction("Index", "Home");
+                    return RedirectToAction("Index", "Home");
                 }
             }
 
-            this.ModelState.AddModelError(string.Empty, "Could not login.");
+            ModelState.AddModelError(string.Empty, "Could not login.");
             return View(model);
         }
 
@@ -101,6 +101,74 @@ namespace CustomerManagementPlatform.Controllers
                 }
 
                 ModelState.AddModelError(string.Empty, "A user already exists with that email address.");
+            }
+
+            return View(model);
+        }
+
+        public async Task<IActionResult> ChangeDetails()
+        {
+            var user = await _userRepository.GetUserByEmailAsync(User.Identity.Name);
+            var model = new ChangeDetailsViewModel();
+            if (user != null)
+            {
+                model.FullName = user.FullName;
+            }
+
+            return View(model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ChangeDetails(ChangeDetailsViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = await _userRepository.GetUserByEmailAsync(User.Identity.Name);
+                if (user != null)
+                {
+                    user.FullName = model.FullName;
+                    var response = await _accountHelper.ChangeDetailsAsync(user);
+                    if (response.Succeeded)
+                    {
+                        ViewBag.SuccessMessage = "User details updated successfully.";
+                    }
+                    else
+                    {
+                        ModelState.AddModelError(string.Empty, response.Errors.FirstOrDefault().Description);
+                    }
+                }
+            }
+
+            return View(model);
+        }
+
+        public IActionResult ChangePassword()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = await _userRepository.GetUserByEmailAsync(User.Identity.Name);
+                if (user != null)
+                {
+                    var result = await _accountHelper.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
+                    if (result.Succeeded)
+                    {
+                        return RedirectToAction("ChangeDetails");
+                    }
+                    else
+                    {
+                        ModelState.AddModelError(string.Empty, result.Errors.FirstOrDefault().Description);
+                    }
+                }
+                else
+                {
+                    ModelState.AddModelError(string.Empty, "User not found.");
+                }
             }
 
             return View(model);
