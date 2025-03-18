@@ -43,6 +43,12 @@ namespace CustomerManagementPlatform
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IAccountHelper, AccountHelper>();
 
+            services.ConfigureApplicationCookie(cfg =>
+            {
+                cfg.LoginPath = "/Errors/Unauthorized401";
+                cfg.AccessDeniedPath = "/Errors/Unauthorized401";
+            });
+
             services.AddControllersWithViews();
         }
 
@@ -55,10 +61,13 @@ namespace CustomerManagementPlatform
             }
             else
             {
-                app.UseExceptionHandler("/Home/Error");
+                app.UseExceptionHandler("/Errors/Error");
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
+
+            app.UseStatusCodePagesWithReExecute("/NotFound404"); // Error view for page not found.
+
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 
