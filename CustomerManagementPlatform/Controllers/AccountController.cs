@@ -5,6 +5,8 @@ using CustomerManagementPlatform.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using System.Data;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -105,6 +107,12 @@ namespace CustomerManagementPlatform.Controllers
             {
                 ViewBag.ErrorMessage = "Could not register user account.";
                 return View(model);
+            }
+
+            await _accountHelper.AddToRoleAsync(user, "Customer");
+            if (!await _accountHelper.IsInRoleAsync(user, "Customer"))
+            {
+                ViewBag.ErrorMessage = "Could not register user account.";
             }
 
             var token = await _accountHelper.GenerateEmailConfirmationTokenAsync(user);

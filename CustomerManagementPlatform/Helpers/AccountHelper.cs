@@ -9,11 +9,13 @@ namespace CustomerManagementPlatform.Helpers
     {
         private readonly SignInManager<User> _signInManager;
         private readonly UserManager<User> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
 
-        public AccountHelper(SignInManager<User> signInManager, UserManager<User> userManager)
+        public AccountHelper(SignInManager<User> signInManager, UserManager<User> userManager, RoleManager<IdentityRole> roleManager)
         {
             _signInManager = signInManager;
             _userManager = userManager;
+            _roleManager = roleManager;
         }
 
         public async Task<SignInResult> LoginAsync(LoginViewModel model)
@@ -54,6 +56,24 @@ namespace CustomerManagementPlatform.Helpers
         public async Task<IdentityResult> ConfirmEmailAsync(User user, string token)
         {
             return await _userManager.ConfirmEmailAsync(user, token);
+        }
+
+        public async Task EnsureCreatedRoleAsync(string role)
+        {
+            if (!await _roleManager.RoleExistsAsync(role))
+            {
+                await _roleManager.CreateAsync(new IdentityRole { Name = role });
+            }
+        }
+
+        public async Task<bool> IsInRoleAsync(User user, string role)
+        {
+            return await _userManager.IsInRoleAsync(user, role);
+        }
+
+        public async Task AddToRoleAsync(User user, string role)
+        {
+            await _userManager.AddToRoleAsync(user, role);
         }
     }
 }

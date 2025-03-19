@@ -22,5 +22,11 @@ namespace CustomerManagementPlatform.Helpers
         Task<string> GenerateEmailConfirmationTokenAsync(User user);
 
         Task<IdentityResult> ConfirmEmailAsync(User user, string token);
+
+        Task EnsureCreatedRoleAsync(string role);
+
+        Task<bool> IsInRoleAsync(User user, string role);
+
+        Task AddToRoleAsync(User user, string role);
     }
 }
