@@ -5,7 +5,7 @@ namespace CustomerManagementPlatform.Models
     public class ResetPasswordViewModel
     {
         [Required]
-        public string Email { get; set; }
+        public string Id { get; set; }
 
         [Required]
         [DataType(DataType.Password)]

@@ -28,6 +28,7 @@ namespace CustomerManagementPlatform
             services.AddIdentity<User, IdentityRole>(cfg =>
             {
                 cfg.Tokens.AuthenticatorTokenProvider = TokenOptions.DefaultAuthenticatorProvider;
+                cfg.SignIn.RequireConfirmedEmail = true;
                 cfg.User.RequireUniqueEmail = true;
                 cfg.Password.RequiredLength = 6;
                 cfg.Password.RequireDigit = false;

@@ -4,14 +4,9 @@ using CustomerManagementPlatform.Helpers;
 using CustomerManagementPlatform.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System;
-using System.Linq;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace CustomerManagementPlatform.Controllers
 {
@@ -74,6 +69,11 @@ namespace CustomerManagementPlatform.Controllers
 
         public IActionResult Register()
         {
+            if (User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Index", "Home"); // Prevent view access if authenticated.
+            }
+
             return View();
         }
 
@@ -107,32 +107,46 @@ namespace CustomerManagementPlatform.Controllers
                 return View(model);
             }
 
-            var loginViewModel = new LoginViewModel
-            {
-                Email = model.Email,
-                Password = model.Password,
-                RememberMe = false,
-            };
+            var token = await _accountHelper.GenerateEmailConfirmationTokenAsync(user);
+            var id = user.Id;
+            var tokenUrl = Url.Action(
+                "ConfirmEmail",
+                "Account",
+                new { token, id },
+                protocol: HttpContext.Request.Scheme
+            );
 
-            var result2 = await _accountHelper.LoginAsync(loginViewModel);
-            if (result2.Succeeded)
+            bool emailSent = _mailHelper.SendEmail(user.Email, "Confirm email", $"<h2>Confirm email</h2>"
+                + $"To confirm your email and access your account, please click <a href=\"{tokenUrl}\" style=\"color: blue;\">here</a>.");
+
+            if (!emailSent)
             {
-                return RedirectToAction("Index", "Home");
+                ViewBag.ErrorMessage = "Could not send email confirmation email.";
+                return View(model);
             }
 
-            ViewBag.ErrorMessage = "Could not register user account.";
-            return View(model);
+            ViewBag.SuccessMessage = "Account created successfully! Instructions to confirm it have been sent to your email address.";
+            ModelState.Clear(); // Clear view form.
+            return View(new RegisterViewModel()); // Return empty view model.
         }
 
         public async Task<IActionResult> ChangeDetails()
         {
-            var user = await _userRepository.GetByEmailAsync(User.Identity.Name);
-            var model = new ChangeDetailsViewModel();
-            if (user != null)
+            if (!User.Identity.IsAuthenticated)
             {
-                model.FullName = user.FullName;
+                return RedirectToAction("Index", "Home"); // Prevent view access if unauthenticated.
             }
 
+            var user = await _userRepository.GetByEmailAsync(User.Identity.Name);
+            if (user == null)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            var model = new ChangeDetailsViewModel
+            {
+                FullName = user.FullName
+            };
             return View(model);
         }
 
@@ -198,53 +212,14 @@ namespace CustomerManagementPlatform.Controllers
 
             return View();
         }
-        
-        [HttpPost]
-        public async Task<IActionResult> GenerateApiToken([FromBody] LoginViewModel model)
-        {
-            if (ModelState.IsValid)
-            {
-                var user = await _userRepository.GetByEmailAsync(model.Email);
-                if (user == null)
-                {
-                    return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
-                }
-
-                var result = await _accountHelper.ValidatePasswordAsync(user, model.Password);
-                if (result.Succeeded)
-                {
-                    var claims = new[]
-                    {
-                        new Claim(JwtRegisteredClaimNames.Sub, user.Email),
-                        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                    };
-
-                    var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Tokens:Key"]));
-                    var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-                    var token = new JwtSecurityToken
-                    (
-                        _configuration["Tokens:Issuer"],
-                        _configuration["Tokens:Audience"],
-                        claims,
-                        expires: DateTime.UtcNow.AddDays(15),
-                        signingCredentials: credentials
-                    );
-
-                    var results = new
-                    {
-                        token = new JwtSecurityTokenHandler().WriteToken(token),
-                        expiration = token.ValidTo,
-                    };
-
-                    return Created(string.Empty, results);
-                }
-            }
-
-            return BadRequest();
-        }
 
         public IActionResult SendPasswordResetEmail()
         {
+            if (User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
             return View();
         }
 
@@ -260,43 +235,74 @@ namespace CustomerManagementPlatform.Controllers
                     return View(model);
                 }
 
-                var token = await _accountHelper.GeneratePasswordResetTokenAsync(user);
-                var tokenUrl = Url.Action(
-                    "ResetPassword",
-                    "Account",
-                    new { token },
-                    protocol: HttpContext.Request.Scheme
-                );
-
-                bool emailSent = _mailHelper.SendEmail(user.Email, "Password reset", $"<h2>Password reset</h2>"
-                    + $"To reset your password, please update it <a href=\"{tokenUrl}\" style=\"color: blue;\">here</a>.");
-
-                if (!emailSent)
+                if (!user.EmailConfirmed)
                 {
-                    ViewBag.ErrorMessage = "Could not send password reset email.";
-                    return View(model);
-                }
+                    var token = await _accountHelper.GenerateEmailConfirmationTokenAsync(user);
+                    var id = user.Id;
+                    var tokenUrl = Url.Action(
+                        "ConfirmEmail",
+                        "Account",
+                        new { token, id },
+                        protocol: HttpContext.Request.Scheme
+                    );
 
-                ViewBag.SuccessMessage = "Instructions to reset your password have been sent to your email address.";
-                return View();
+                    bool emailSent = _mailHelper.SendEmail(user.Email, "Confirm email", $"<h2>Confirm email</h2>"
+                        + $"To confirm your email and access your account, please click <a href=\"{tokenUrl}\" style=\"color: blue;\">here</a>.");
+
+                    if (!emailSent)
+                    {
+                        ViewBag.ErrorMessage = "Could not send email confirmation email.";
+                        return View(model);
+                    }
+
+                    ViewBag.SuccessMessage = "This account has not been confirmed. Instructions to confirm it have been sent to your email address.";
+                    return View();
+                }
+                else
+                {
+                    var token = await _accountHelper.GeneratePasswordResetTokenAsync(user);
+                    var id = user.Id;
+                    var tokenUrl = Url.Action(
+                        "ResetPassword",
+                        "Account",
+                        new { token, id },
+                        protocol: HttpContext.Request.Scheme
+                    );
+
+                    bool emailSent = _mailHelper.SendEmail(user.Email, "Password reset", $"<h2>Password reset</h2>"
+                        + $"To reset your password, please update it <a href=\"{tokenUrl}\" style=\"color: blue;\">here</a>.");
+
+                    if (!emailSent)
+                    {
+                        ViewBag.ErrorMessage = "Could not send password reset email.";
+                        return View(model);
+                    }
+
+                    ViewBag.SuccessMessage = "Instructions to reset your password have been sent to your email address.";
+                    return View();
+                }
             }
 
             return View(model);
         }
 
-        public IActionResult ResetPassword(string token)
+        public IActionResult ResetPassword(string token, string id)
         {
+            if (User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
             return View();
         }
 
         [HttpPost]
         public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
         {
-            var user = await _userRepository.GetByEmailAsync(model.Email);
+            var user = await _userRepository.GetByIdAsync(model.Id);
             if (user == null)
             {
-                ViewBag.ErrorMessage = "Email address not found.";
-                return View(model);
+                return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
             }
 
             var result = await _accountHelper.ResetPasswordAsync(user, model.Token, model.NewPassword);
@@ -307,6 +313,33 @@ namespace CustomerManagementPlatform.Controllers
             }
 
             ViewBag.SuccessMessage = "Password updated successfully!";
+            return View();
+        }
+
+        public async Task<IActionResult> ConfirmEmail(string id, string token)
+        {
+            if (User.Identity.IsAuthenticated)
+            {
+                await _accountHelper.LogoutAsync();
+            }
+
+            if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(token))
+            {
+                return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
+            }
+
+            var user = await _userRepository.GetByIdAsync(id);
+            if (user == null)
+            {
+                return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
+            }
+
+            var result = await _accountHelper.ConfirmEmailAsync(user, token);
+            if (!result.Succeeded)
+            {
+                return RedirectToAction("NotFound404", "Errors");
+            }
+
             return View();
         }
     }
