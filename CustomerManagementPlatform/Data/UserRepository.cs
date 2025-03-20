@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace CustomerManagementPlatform.Data
@@ -34,6 +35,11 @@ namespace CustomerManagementPlatform.Data
         public async Task<IdentityResult> CreateAsync(User user, string password)
         {
             return await _userManager.CreateAsync(user, password);
+        }
+
+        public async Task<List<string>> GetUserRolesAsync(User user)
+        {
+            return (await _userManager.GetRolesAsync(user)).ToList();
         }
     }
 }

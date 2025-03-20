@@ -14,5 +14,7 @@ namespace CustomerManagementPlatform.Data
         Task<List<User>> GetAllAsync();
 
         Task<IdentityResult> CreateAsync(User user, string password);
+
+        Task<List<string>> GetUserRolesAsync(User user);
     }
 }
