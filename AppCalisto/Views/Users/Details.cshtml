@@ -1,0 +1,30 @@
+﻿@model AppCalisto.Data.Entities.User
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h2>User details</h2>
+<div>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">Role</dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => Model.Role)
+        </dd>
+        <dt class="col-sm-2">Name</dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => Model.Name)
+        </dd>
+        <dt class="col-sm-2">Email</dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => Model.Email)
+        </dd>
+        <dt class="col-sm-2">Email Confirmed</dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => Model.EmailConfirmed)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Index">Back to list</a>
+</div>

@@ -398,3 +398,6 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+/AppCalisto/appsettings.json
+/AppCalisto/appsettings.Development.json
