@@ -25,19 +25,14 @@ namespace AppCalisto.Helpers
 
         public IEnumerable<SelectListItem> GetAll()
         {
-            var list = _roleManager.Roles.Select(r => new SelectListItem
-            {
-                Text = r.Name,
-                Value = r.Name,
-            }).OrderBy(i => i.Text).ToList();
-
-            list.Insert(0, new SelectListItem
-            {
-                Text = "(Select a role...)",
-                Value = string.Empty,
-            });
-
-            return list;
+            return _roleManager.Roles
+                .Select(r => new SelectListItem
+                {
+                    Text = r.Name,
+                    Value = r.Name
+                })
+                .OrderBy(i => i.Text)
+                .ToList();
         }
     }
 }

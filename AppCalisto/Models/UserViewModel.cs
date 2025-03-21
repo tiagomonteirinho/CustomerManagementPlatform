@@ -10,10 +10,10 @@ namespace AppCalisto.Models
         [MaxLength(99)]
         public string Name { get; set; }
 
-        [Required(ErrorMessage = "A role must be selected")]
-        public string Role { get; set; }
+        [Required(ErrorMessage = "At least one role must be selected")]
+        public List<string> Roles { get; set; } = new List<string>();
 
-        public IEnumerable<SelectListItem> Roles { get; set; }
+        public IEnumerable<SelectListItem> SelectableRoles { get; set; }
 
         [Required]
         [DataType(DataType.EmailAddress)]

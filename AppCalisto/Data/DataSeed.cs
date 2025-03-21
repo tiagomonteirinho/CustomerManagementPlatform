@@ -32,11 +32,11 @@ namespace AppCalisto.Data
             var users = await _userRepository.GetAllAsync();
             if (users == null || users.Count <= 1)
             {
-                var seedUsers = new List<(string name, string email, string role)>
+                var seedUsers = new List<(string name, string email, IEnumerable<string> roles)>
                 {
-                    ("Admin", "admin@mail", "Admin"),
-                    ("Employee", "employee@mail", "Employee"),
-                    ("Employee 2", "employee2@mail", "Employee")
+                    ("Admin", "admin@mail", new List<string> { "Admin" }),
+                    ("Employee", "employee@mail", new List<string> { "Admin", "Employee" }),
+                    ("Employee 2", "employee2@mail", new List<string> { "Employee" })
                 };
 
                 foreach (var (name, email, role) in seedUsers)
@@ -49,7 +49,7 @@ namespace AppCalisto.Data
             }
         }
 
-        private async Task<User> CreateUser(string name, string email, string role)
+        private async Task<User> CreateUser(string name, string email, IEnumerable<string> roles)
         {
             var user = await _userRepository.GetByEmailAsync(email);
             if (user == null)
@@ -68,10 +68,13 @@ namespace AppCalisto.Data
                     throw new InvalidOperationException($"Could not create seed user.");
                 }
 
-                await _userRepository.AddToRoleAsync(user, role);
-                if (!await _userRepository.IsInRoleAsync(user, role))
+                await _userRepository.AddToRolesAsync(user, roles);
+                foreach (var role in roles)
                 {
-                    throw new InvalidOperationException($"Could not add seed user to role.");
+                    if (!await _userRepository.IsInRoleAsync(user, role))
+                    {
+                        throw new InvalidOperationException($"Could not add seed user to role.");
+                    }
                 }
 
                 var token = await _accountHelper.GenerateEmailConfirmationTokenAsync(user);

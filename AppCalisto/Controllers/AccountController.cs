@@ -183,7 +183,6 @@ namespace AppCalisto.Controllers
 
                 bool emailSent = _mailHelper.SendEmail(user.Email, "Password reset", $"<h2>Password reset</h2>"
                     + $"To reset your password, please update it <a href=\"{actionUrl}\" style=\"color: blue;\">here</a>.");
-
                 if (!emailSent)
                 {
                     ViewBag.ErrorMessage = "Could not send password reset email.";
@@ -207,7 +206,6 @@ namespace AppCalisto.Controllers
 
                 bool emailSent = _mailHelper.SendEmail(user.Email, "Email confirmation", $"<h2>Email confirmation</h2>"
                     + $"To confirm your email, please set your password <a href=\"{actionUrl}\" style=\"color: blue;\">here</a>.");
-
                 if (!emailSent)
                 {
                     ViewBag.ErrorMessage = "Could not send email confirmation email.";
@@ -243,13 +241,6 @@ namespace AppCalisto.Controllers
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
             }
 
-            var result = await _accountHelper.SetPasswordAsync(user, model.PasswordSetToken, model.NewPassword);
-            if (!result.Succeeded)
-            {
-                ViewBag.ErrorMessage = "Could not set password.";
-                return View(model);
-            }
-
             if (!string.IsNullOrEmpty(model.EmailConfirmationToken))
             {
                 var confirmEmail = await _accountHelper.ConfirmEmailAsync(user, model.EmailConfirmationToken);
@@ -257,6 +248,13 @@ namespace AppCalisto.Controllers
                 {
                     return RedirectToAction("NotFound404", "Errors");
                 }
+            }
+
+            var result = await _accountHelper.SetPasswordAsync(user, model.PasswordSetToken, model.NewPassword);
+            if (!result.Succeeded)
+            {
+                ViewBag.ErrorMessage = "Could not set password.";
+                return View(model);
             }
 
             ViewBag.SuccessMessage = "Password updated successfully!";

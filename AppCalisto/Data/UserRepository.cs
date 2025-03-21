@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
+using System.Data;
 using System.Threading.Tasks;
 
 namespace AppCalisto.Data
@@ -58,11 +59,9 @@ namespace AppCalisto.Data
             return await _userManager.IsInRoleAsync(user, role);
         }
 
-        public async Task AddToRoleAsync(User user, string role)
+        public async Task AddToRolesAsync(User user, IEnumerable<string> roles)
         {
-            await _userManager.AddToRoleAsync(user, role);
-            user.Role = role;
-            await UpdateAsync(user);
+            await _userManager.AddToRolesAsync(user, roles);
         }
     }
 }

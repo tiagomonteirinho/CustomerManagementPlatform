@@ -21,6 +21,6 @@ namespace AppCalisto.Data
 
         Task<bool> IsInRoleAsync(User user, string role);
 
-        Task AddToRoleAsync(User user, string role);
+        Task AddToRolesAsync(User user, IEnumerable<string> roles);
     }
 }

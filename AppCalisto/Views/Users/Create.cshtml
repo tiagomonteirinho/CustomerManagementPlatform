@@ -24,9 +24,16 @@
             <div asp-validation-summary="ModelOnly"></div>
 
             <div class="form-group">
-                <label asp-for="Role" class="control-label"></label>
-                <select asp-for="Role" asp-items="Model.Roles" class="form-control"></select>
-                <span asp-validation-for="Role" class="text-warning"></span>
+                <label>Roles</label>
+                @foreach (var role in Model.SelectableRoles)
+                {
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" name="Roles" value="@role.Value"
+                        @(Model.Roles.Contains(role.Value) ? "checked" : "") />
+                        <label class="form-check-label">@role.Text</label>
+                    </div>
+                }
+                <span asp-validation-for="Roles" class="text-warning"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Name">Name</label>

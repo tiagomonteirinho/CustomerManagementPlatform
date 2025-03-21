@@ -19,7 +19,7 @@
                 <table class="table table-hover table-responsive-lg" id="MyTable">
                     <thead>
                         <tr>
-                            <th>Role</th>
+                            <th>Roles</th>
                             <th>Name</th>
                             <th>Email</th>
                             <th>Email Confirmed</th>
@@ -30,7 +30,7 @@
                         @foreach (var item in Model)
                         {
                             <tr>
-                                <td>@Html.DisplayFor(modelItem => item.Role)</td>
+                                <td>@string.Join(", ", item.Roles)</td>
                                 <td>@Html.DisplayFor(modelItem => item.Name)</td>
                                 <td>@Html.DisplayFor(modelItem => item.Email)</td>
                                 <td>@Html.DisplayFor(modelItem => item.EmailConfirmed)</td>

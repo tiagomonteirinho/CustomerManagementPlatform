@@ -5,6 +5,8 @@ using AppCalisto.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace AppCalisto.Controllers
@@ -28,21 +30,44 @@ namespace AppCalisto.Controllers
         public async Task<IActionResult> Index()
         {
             var users = await _userRepository.GetAllAsync();
+            foreach (var user in users)
+            {
+                user.Roles = (await _userRepository.GetRolesAsync(user)).ToList();
+            }
+
             return View(users);
+        }
+
+        public async Task<IActionResult> Details(string id)
+        {
+            if (id == null)
+            {
+                return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
+            }
+
+            var user = await _userRepository.GetByIdAsync(id);
+            if (user == null)
+            {
+                return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
+            }
+
+            user.Roles = (await _userRepository.GetRolesAsync(user)).ToList();
+            return View(user);
         }
 
         public IActionResult Create()
         {
             return View(new UserViewModel
             {
-                Roles = _roleHelper.GetAll()
+                SelectableRoles = _roleHelper.GetAll(),
+                Roles = new List<string>()
             });
         }
 
         [HttpPost]
         public async Task<IActionResult> Create(UserViewModel model)
         {
-            model.Roles = _roleHelper.GetAll(); // Update view roles.
+            model.SelectableRoles = _roleHelper.GetAll(); // Update view roles.
             if (!ModelState.IsValid)
             {
                 ViewBag.ErrorMessage = "Could not create user.";
@@ -70,12 +95,14 @@ namespace AppCalisto.Controllers
                 return View(model);
             }
 
-            await _userRepository.AddToRoleAsync(user, model.Role);
-            var isInRole = await _userRepository.IsInRoleAsync(user, model.Role);
-            if (!isInRole)
+            await _userRepository.AddToRolesAsync(user, model.Roles);
+            foreach (var role in model.Roles)
             {
-                ViewBag.ErrorMessage = "Could not create user.";
-                return View(model);
+                if (!await _userRepository.IsInRoleAsync(user, role))
+                {
+                    ViewBag.ErrorMessage = "Could not create user.";
+                    return View(model);
+                }
             }
 
             string passwordSetToken = await _accountHelper.GeneratePasswordSetTokenAsync(user);
@@ -90,7 +117,6 @@ namespace AppCalisto.Controllers
 
             bool emailSent = _mailHelper.SendEmail(user.Email, "Email confirmation", $"<h2>Email confirmation</h2>"
                 + $"To confirm your email, please set your password <a href=\"{actionUrl}\" style=\"color: blue;\">here</a>.");
-
             if (!emailSent)
             {
                 ViewBag.ErrorMessage = "Could not send account confirmation email.";
@@ -101,24 +127,8 @@ namespace AppCalisto.Controllers
             ModelState.Clear(); // Clear view form.
             return View(new UserViewModel
             {
-                Roles = _roleHelper.GetAll() // Update view roles.
+                SelectableRoles = _roleHelper.GetAll() // Update view roles.
             });
-        }
-
-        public async Task<IActionResult> Details(string id)
-        {
-            if (id == null)
-            {
-                return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
-            }
-
-            var user = await _userRepository.GetByIdAsync(id);
-            if (user == null)
-            {
-                return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
-            }
-
-            return View(user);
         }
     }
 }
