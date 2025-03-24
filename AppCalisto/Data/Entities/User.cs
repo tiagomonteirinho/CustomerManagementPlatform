@@ -7,6 +7,7 @@ namespace AppCalisto.Data.Entities
 {
     public class User : IdentityUser
     {
+        [Required]
         [MaxLength(99)]
         public string Name { get; set; }
 

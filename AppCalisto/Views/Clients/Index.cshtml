@@ -1,14 +1,14 @@
-﻿@model IEnumerable<AppCalisto.Data.Entities.User>
+﻿@model IEnumerable<AppCalisto.Data.Entities.Client>
 @{
     ViewData["Title"] = "Index";
 }
 
 <link rel="stylesheet" href="https://cdn.datatables.net/1.10.25/css/dataTables.bootstrap4.min.css" />
 
-<h2>All users</h2>
+<h2>All clients</h2>
 <br />
 
-<a asp-action="Create" class="btn btn-primary">Create new user</a>
+<a asp-action="Create" class="btn btn-primary">Create new client</a>
 <br />
 <br />
 
@@ -19,10 +19,12 @@
                 <table class="table table-hover table-responsive-lg" id="MyTable">
                     <thead>
                         <tr>
-                            <th>Roles</th>
+                            <th>Id</th>
                             <th>Name</th>
+                            <th>Contact person</th>
                             <th>Email</th>
-                            <th>Email Confirmed</th>
+                            <th>Phone</th>
+                            <th>Tax</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -30,10 +32,12 @@
                         @foreach (var item in Model)
                         {
                             <tr>
-                                <td>@string.Join(", ", item.Roles)</td>
+                                <td>@Html.DisplayFor(modelItem => item.Id)</td>
                                 <td>@Html.DisplayFor(modelItem => item.Name)</td>
+                                <td>@Html.DisplayFor(modelItem => item.ContactPerson)</td>
                                 <td>@Html.DisplayFor(modelItem => item.Email)</td>
-                                <td>@Html.DisplayFor(modelItem => item.EmailConfirmed)</td>
+                                <td>@Html.DisplayFor(modelItem => item.Phone)</td>
+                                <td>@Html.DisplayFor(modelItem => item.Tax)</td>
                                 <td>
                                     <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-primary">Details</a>
                                 </td>

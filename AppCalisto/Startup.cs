@@ -1,5 +1,6 @@
 using AppCalisto.Data;
 using AppCalisto.Data.Entities;
+using AppCalisto.Data.Repositories;
 using AppCalisto.Helpers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -58,9 +59,9 @@ namespace AppCalisto
 
             services.AddTransient<DataSeed>();
             services.AddScoped<IUserRepository, UserRepository>();
-            services.AddScoped<IAccountHelper, AccountHelper>();
+            services.AddScoped<IRoleRepository, RoleRepository>();
+            services.AddScoped<IClientRepository, ClientRepository>();
             services.AddScoped<IMailHelper, MailHelper>();
-            services.AddScoped<IRoleHelper, RoleHelper>();
 
             services.ConfigureApplicationCookie(cfg =>
             {
@@ -99,7 +100,7 @@ namespace AppCalisto
             {
                 endpoints.MapControllerRoute(
                     name: "default",
-                    pattern: "{controller=Home}/{action=Index}/{id?}");
+                    pattern: "{controller=Users}/{action=Login}/{id?}"); // Default page.
             });
         }
     }
