@@ -49,7 +49,7 @@ namespace AppCalisto.Controllers
         {
             if (!ModelState.IsValid)
             {
-                ViewBag.ErrorMessage = "Could not create client.";
+                ViewBag.Failure = "Could not create client.";
                 return View();
             }
 
@@ -65,11 +65,11 @@ namespace AppCalisto.Controllers
             await _clientRepository.CreateAsync(client);
             if (!await _clientRepository.ExistsAsync(client.Id))
             {
-                ViewBag.ErrorMessage = "Could not create client.";
+                ViewBag.Failure = "Could not create client.";
                 return View(model);
             }
 
-            ViewBag.SuccessMessage = "Client created successfully!";
+            ViewBag.Success = "Client created successfully!";
             return View();
         }
     }

@@ -1,9 +1,9 @@
 ﻿@model AppCalisto.Models.UserViewModel;
 @{
-    ViewData["Title"] = "Create new user";
+    ViewData["Title"] = "Edit user";
 }
 
-<h2>Create new user</h2>
+<h2>@Model.Name</h2>
 <hr />
 @if (ViewBag.Success != null)
 {
@@ -47,11 +47,28 @@
             </div>
 
             <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
+                <input type="submit" value="Save changes" class="btn btn-primary" />
+                <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary">Back to details</a>
             </div>
         </form>
-        <div>
-            <a asp-action="Index">Back to list</a>
+        <div class="form-group">
+            @if (!(Model.Roles ?? new List<string>()).Contains("Admin"))
+            {
+                @if (Model.LockoutEnd == null || Model.LockoutEnd < DateTimeOffset.Now)
+                {
+                    <form method="post" asp-action="Deactivate">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <input type="submit" value="Deactivate user" class="btn btn-danger" />
+                    </form>
+                }
+                else
+                {
+                    <form method="post" asp-action="Activate">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <input type="submit" value="Activate user" class="btn btn-success" />
+                    </form>
+                }
+            }
         </div>
     </div>
 </div>

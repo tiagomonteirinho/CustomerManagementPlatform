@@ -2,6 +2,7 @@
 using AppCalisto.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -26,6 +27,31 @@ namespace AppCalisto.Data.Repositories
         public async Task LogoutAsync()
         {
             await _signInManager.SignOutAsync();
+        }
+
+        public async Task<IdentityResult> ChangePasswordAsync(User user, string oldPassword, string newPassword)
+        {
+            return await _userManager.ChangePasswordAsync(user, oldPassword, newPassword);
+        }
+
+        public async Task<string> GeneratePasswordSetTokenAsync(User user)
+        {
+            return await _userManager.GeneratePasswordResetTokenAsync(user);
+        }
+
+        public async Task<IdentityResult> SetPasswordAsync(User user, string token, string password)
+        {
+            return await _userManager.ResetPasswordAsync(user, token, password);
+        }
+
+        public async Task<string> GenerateEmailConfirmationTokenAsync(User user)
+        {
+            return await _userManager.GenerateEmailConfirmationTokenAsync(user);
+        }
+
+        public async Task<IdentityResult> ConfirmEmailAsync(User user, string token)
+        {
+            return await _userManager.ConfirmEmailAsync(user, token);
         }
 
         public async Task<List<User>> GetAllAsync()
@@ -61,29 +87,19 @@ namespace AppCalisto.Data.Repositories
             return await _userManager.UpdateAsync(user);
         }
 
-        public async Task<IdentityResult> ChangePasswordAsync(User user, string oldPassword, string newPassword)
+        public async Task<bool> IsLockedOutAsync(User user)
         {
-            return await _userManager.ChangePasswordAsync(user, oldPassword, newPassword);
+            return await _userManager.IsLockedOutAsync(user);
         }
 
-        public async Task<string> GeneratePasswordSetTokenAsync(User user)
+        public async Task<IdentityResult> LockOutAsync(User user)
         {
-            return await _userManager.GeneratePasswordResetTokenAsync(user);
+            return await _userManager.SetLockoutEndDateAsync(user, DateTimeOffset.MaxValue);
         }
 
-        public async Task<IdentityResult> SetPasswordAsync(User user, string token, string password)
+        public async Task<IdentityResult> UnlockAsync(User user)
         {
-            return await _userManager.ResetPasswordAsync(user, token, password);
-        }
-
-        public async Task<string> GenerateEmailConfirmationTokenAsync(User user)
-        {
-            return await _userManager.GenerateEmailConfirmationTokenAsync(user);
-        }
-
-        public async Task<IdentityResult> ConfirmEmailAsync(User user, string token)
-        {
-            return await _userManager.ConfirmEmailAsync(user, token);
+            return await _userManager.SetLockoutEndDateAsync(user, null);
         }
 
         public async Task<IList<string>> GetRolesAsync(User user)
@@ -99,6 +115,11 @@ namespace AppCalisto.Data.Repositories
         public async Task AddToRolesAsync(User user, IEnumerable<string> roles)
         {
             await _userManager.AddToRolesAsync(user, roles);
+        }
+
+        public async Task RemoveFromRolesAsync(User user, IEnumerable<string> roles)
+        {
+            await _userManager.RemoveFromRolesAsync(user, roles);
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using AppCalisto.Data.Entities;
 using AppCalisto.Data.Repositories;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,7 +25,13 @@ namespace AppCalisto.Data
         public async Task SeedAsync()
         {
             await _context.Database.EnsureCreatedAsync();
+            await CreateRoles();
+            await CreateUsers();
+            await CreateClients();
+        }
 
+        public async Task CreateRoles()
+        {
             var seedRoles = new List<string> { "Admin", "PT Informática", "Global Eletrik", "Eficaz" };
             foreach (var role in seedRoles)
             {
@@ -33,7 +40,10 @@ namespace AppCalisto.Data
                     await _roleRepository.CreateAsync(role);
                 }
             }
+        }
 
+        public async Task CreateUsers()
+        {
             var users = await _userRepository.GetAllAsync();
             if (users == null || users.Count <= 1)
             {
@@ -54,79 +64,53 @@ namespace AppCalisto.Data
                         }
                     }
 
-                    var user = await CreateUser(name, email, roles);
-                    users.Add(user);
-                }
-
-                await _context.SaveChangesAsync();
-            }
-
-            var clients = _context.Clients.ToList();
-            if (clients == null || !clients.Any())
-            {
-                var seedClients = new List<(string name, string email, string contactPerson, string phone, string tax)>
-                {
-                    ("Client 1", "Person 1", "client@mail", "987654321", "123456789"),
-                    ("Client 2", "Person 2", "client2@mail", "987654321", "123456789")
-                };
-
-                foreach (var (name, email, contactPerson, phone, tax) in seedClients)
-                {
-                    var client = CreateClient(name, email, contactPerson, phone, tax);
-                    clients.Add(client);
-                }
-
-                await _context.SaveChangesAsync();
-            }
-        }
-
-        private async Task<User> CreateUser(string name, string email, IEnumerable<string> roles)
-        {
-            var user = await _userRepository.GetByEmailAsync(email);
-            if (user == null)
-            {
-                user = new User
-                {
-                    Name = name,
-                    Email = email,
-                    UserName = email,
-                    EmailConfirmed = true,
-                };
-
-                if (await _userRepository.CreateAsync(user, "123456") != IdentityResult.Success)
-                {
-                    throw new InvalidOperationException($"Could not create seed user.");
-                }
-
-                await _userRepository.AddToRolesAsync(user, roles);
-                foreach (var role in roles)
-                {
-                    if (!await _userRepository.IsInRoleAsync(user, role))
+                    var user = await _userRepository.GetByEmailAsync(email);
+                    if (user == null)
                     {
-                        throw new InvalidOperationException($"Could not add seed user to role.");
+                        user = new User
+                        {
+                            Name = name,
+                            Email = email,
+                            UserName = email,
+                            EmailConfirmed = true,
+                        };
+
+                        if (await _userRepository.CreateAsync(user, "123456") != IdentityResult.Success)
+                        {
+                            throw new InvalidOperationException($"Could not create seed user.");
+                        }
+
+                        await _userRepository.AddToRolesAsync(user, roles);
+                        foreach (var role in roles)
+                        {
+                            if (!await _userRepository.IsInRoleAsync(user, role))
+                            {
+                                throw new InvalidOperationException($"Could not add seed user to role.");
+                            }
+                        }
+
+                        var token = await _userRepository.GenerateEmailConfirmationTokenAsync(user);
+                        await _userRepository.ConfirmEmailAsync(user, token);
                     }
                 }
 
-                var token = await _userRepository.GenerateEmailConfirmationTokenAsync(user);
-                await _userRepository.ConfirmEmailAsync(user, token);
+                await _context.SaveChangesAsync();
             }
-
-            return user;
         }
 
-        private Client CreateClient(string name, string contactPerson, string email, string phone, string tax)
+        public async Task CreateClients()
         {
-            var client = new Client()
+            if (!await _context.Clients.AnyAsync())
             {
-                Name = name,
-                ContactPerson = contactPerson,
-                Email = email,
-                Phone = phone,
-                Tax = tax
-            };
+                var seedClients = new List<Client>
+                {
+                    new Client { Name = "Client 1", ContactPerson = "Person 1", Email = "client@mail", Phone = "987654321", Tax = "123456789" },
+                    new Client { Name = "Client 2", ContactPerson = "Person 2", Email = "client2@mail", Phone = "987654321", Tax = "123456789" }
+                };
 
-            _context.Clients.Add(client);
-            return client;
+                _context.Clients.AddRange(seedClients);
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }

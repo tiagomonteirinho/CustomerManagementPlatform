@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 
 namespace AppCalisto.Controllers
 {
+    [Authorize(Roles = "Admin")]
     public class UsersController : Controller
     {
         private readonly IUserRepository _userRepository;
@@ -24,49 +25,6 @@ namespace AppCalisto.Controllers
             _mailHelper = mailHelper;
         }
 
-        public IActionResult Login()
-        {
-            if (User.Identity.IsAuthenticated)
-            {
-                return RedirectToAction("Index", "Home");
-            }
-
-            return View();
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> Login(LoginViewModel model)
-        {
-            if (!ModelState.IsValid)
-            {
-                ViewBag.ErrorMessage = "Invalid login attempt.";
-                return View(model);
-            }
-
-            var user = await _userRepository.GetByEmailAsync(model.Email);
-            if (user == null)
-            {
-                ViewBag.ErrorMessage = "Could not find that email address.";
-                return View(model);
-            }
-
-            var result = await _userRepository.LoginAsync(model);
-            if (!result.Succeeded)
-            {
-                ViewBag.ErrorMessage = "Could not log in.";
-                return View(model);
-            }
-
-            return RedirectToAction("Index", "Home");
-        }
-
-        public async Task<IActionResult> Logout()
-        {
-            await _userRepository.LogoutAsync();
-            return RedirectToAction("Index", "Home");
-        }
-
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Index()
         {
             var users = await _userRepository.GetAllAsync();
@@ -78,49 +36,29 @@ namespace AppCalisto.Controllers
             return View(users);
         }
 
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Details(string id)
-        {
-            if (id == null)
-            {
-                return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
-            }
-
-            var user = await _userRepository.GetByIdAsync(id);
-            if (user == null)
-            {
-                return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
-            }
-
-            user.Roles = (await _userRepository.GetRolesAsync(user)).ToList();
-            return View(user);
-        }
-
-        [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
             return View(new UserViewModel
             {
-                SelectableRoles = _roleRepository.GetAll(),
-                Roles = new List<string>()
+                Roles = new List<string>(),
+                SelectableRoles = _roleRepository.GetAll()
             });
         }
 
-        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<IActionResult> Create(UserViewModel model)
         {
             model.SelectableRoles = _roleRepository.GetAll(); // Update view roles.
             if (!ModelState.IsValid)
             {
-                ViewBag.ErrorMessage = "Could not create user.";
+                ViewBag.Failure = "Could not create user.";
                 return View(model);
             }
 
             var user = await _userRepository.GetByEmailAsync(model.Email);
             if (user != null)
             {
-                ViewBag.ErrorMessage = "That email is already being used.";
+                ViewBag.Failure = "That email is already being used.";
                 return View(model);
             }
 
@@ -131,10 +69,9 @@ namespace AppCalisto.Controllers
                 UserName = model.Email,
             };
 
-            var result = await _userRepository.CreateAsync(user, null);
-            if (result != IdentityResult.Success)
+            if (await _userRepository.CreateAsync(user, null) != IdentityResult.Success)
             {
-                ViewBag.ErrorMessage = "Could not create user.";
+                ViewBag.Failure = "Could not create user.";
                 return View(model);
             }
 
@@ -143,7 +80,7 @@ namespace AppCalisto.Controllers
             {
                 if (!await _userRepository.IsInRoleAsync(user, role))
                 {
-                    ViewBag.ErrorMessage = "Could not create user.";
+                    ViewBag.Failure = "Could not create user.";
                     return View(model);
                 }
             }
@@ -162,11 +99,11 @@ namespace AppCalisto.Controllers
                 + $"To confirm your email, please set your password <a href=\"{actionUrl}\" style=\"color: blue;\">here</a>.");
             if (!emailSent)
             {
-                ViewBag.ErrorMessage = "Could not send account confirmation email.";
+                ViewBag.Failure = "Could not send account confirmation email.";
                 return View(model);
             }
 
-            ViewBag.SuccessMessage = "User created successfully!";
+            ViewBag.Success = "User created successfully!";
             ModelState.Clear(); // Clear view form.
             return View(new UserViewModel
             {
@@ -174,152 +111,135 @@ namespace AppCalisto.Controllers
             });
         }
 
-        [Authorize]
-        public IActionResult ChangePassword()
+        public async Task<IActionResult> Details(string id)
         {
-            return View();
-        }
-        
-        [Authorize]
-        [HttpPost]
-        public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
-        {
-            if (!ModelState.IsValid)
+            if (id == null)
             {
-                return View();
+                return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
             }
 
-            var user = await _userRepository.GetByEmailAsync(User.Identity.Name);
+            var user = await _userRepository.GetByIdAsync(id);
             if (user == null)
             {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
             }
 
-            var result = await _userRepository.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
-            if (result.Succeeded)
-            {
-                ViewBag.SuccessMessage = "Password updated successfully!";
-                return View();
-            }
-
-            ViewBag.ErrorMessage = result.Errors.FirstOrDefault().Description;
-            return View();
+            user.Roles = (await _userRepository.GetRolesAsync(user)).ToList();
+            return View(user);
         }
 
-        public IActionResult SendPasswordResetEmail()
+        public async Task<IActionResult> Edit(string id)
         {
-            if (User.Identity.IsAuthenticated)
-            {
-                _userRepository.LogoutAsync();
-            }
-
-            return View();
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> SendPasswordResetEmail(SendPasswordSetEmailViewModel model)
-        {
-            if (!ModelState.IsValid)
-            {
-                return View(model);
-            }
-
-            var user = await _userRepository.GetByEmailAsync(model.Email);
+            var user = await _userRepository.GetByIdAsync(id);
             if (user == null)
             {
-                ViewBag.ErrorMessage = "Email address not found.";
-                return View(model);
+                return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
             }
 
-            if (user.EmailConfirmed)
+            var model = new UserViewModel
             {
-                var passwordSetToken = await _userRepository.GeneratePasswordSetTokenAsync(user);
-                var actionUrl = Url.Action
-                (
-                    "SetPassword",
-                    "Users",
-                    new { id = user.Id, passwordSetToken },
-                    protocol: HttpContext.Request.Scheme
-                );
+                Id = user.Id,
+                Name = user.Name,
+                Email = user.Email,
+                Roles = (await _userRepository.GetRolesAsync(user)).ToList(),
+                SelectableRoles = _roleRepository.GetAll().Where(r => r.Text != "Admin").ToList(),
+                LockoutEnd = user.LockoutEnd
+            };
 
-                bool emailSent = _mailHelper.SendEmail(user.Email, "Password reset", $"<h2>Password reset</h2>"
-                    + $"To reset your password, please update it <a href=\"{actionUrl}\" style=\"color: blue;\">here</a>.");
-                if (!emailSent)
-                {
-                    ViewBag.ErrorMessage = "Could not send password reset email.";
-                    return View(model);
-                }
-
-                ViewBag.SuccessMessage = "Instructions to reset your password have been sent to your email address.";
-                return View();
-            }
-            else
-            {
-                string passwordSetToken = await _userRepository.GeneratePasswordSetTokenAsync(user);
-                var emailConfirmationToken = await _userRepository.GenerateEmailConfirmationTokenAsync(user);
-                var actionUrl = Url.Action
-                (
-                    "SetPassword",
-                    "Users",
-                    new { id = user.Id, passwordSetToken, emailConfirmationToken },
-                    protocol: HttpContext.Request.Scheme
-                );
-
-                bool emailSent = _mailHelper.SendEmail(user.Email, "Email confirmation", $"<h2>Email confirmation</h2>"
-                    + $"To confirm your email, please set your password <a href=\"{actionUrl}\" style=\"color: blue;\">here</a>.");
-                if (!emailSent)
-                {
-                    ViewBag.ErrorMessage = "Could not send email confirmation email.";
-                    return View(model);
-                }
-
-                ViewBag.SuccessMessage = "This account has not been confirmed. Instructions to confirm it and set your password have been sent to your email address.";
-                return View();
-            }
-        }
-
-        public IActionResult SetPassword(string id, string passwordSetToken, string emailConfirmationToken)
-        {
-            if (User.Identity.IsAuthenticated)
-            {
-                _userRepository.LogoutAsync();
-            }
-
-            return View(new SetPasswordViewModel
-            {
-                Id = id,
-                PasswordSetToken = passwordSetToken,
-                EmailConfirmationToken = emailConfirmationToken
-            });
+            return View(model);
         }
 
         [HttpPost]
-        public async Task<IActionResult> SetPassword(SetPasswordViewModel model)
+        public async Task<IActionResult> Edit(UserViewModel model)
         {
+            model.SelectableRoles = _roleRepository.GetAll().Where(r => r.Text != "Admin").ToList(); // Update view roles.
+            if (!ModelState.IsValid)
+            {
+                ViewBag.Failure = "Could not update user.";
+                return View(model);
+            }
+
             var user = await _userRepository.GetByIdAsync(model.Id);
             if (user == null)
             {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
             }
 
-            if (!string.IsNullOrEmpty(model.EmailConfirmationToken))
+            var existingUser = await _userRepository.GetByEmailAsync(model.Email);
+            if (existingUser != null && existingUser != user)
             {
-                var confirmEmail = await _userRepository.ConfirmEmailAsync(user, model.EmailConfirmationToken);
-                if (!confirmEmail.Succeeded)
-                {
-                    return RedirectToAction("NotFound404", "Errors");
-                }
-            }
-
-            var result = await _userRepository.SetPasswordAsync(user, model.PasswordSetToken, model.NewPassword);
-            if (!result.Succeeded)
-            {
-                ViewBag.ErrorMessage = "Could not set password.";
+                ViewBag.Failure = "That email is already being used.";
                 return View(model);
             }
 
-            ViewBag.SuccessMessage = "Password updated successfully!";
-            return View();
+            user.Name = model.Name;
+            user.Email = model.Email;
+            user.UserName = model.Email;
+
+            if (await _userRepository.UpdateAsync(user) != IdentityResult.Success)
+            {
+                ViewBag.Failure = "Could not update user.";
+                return View(model);
+            }
+
+            user.Roles = (await _userRepository.GetRolesAsync(user)).ToList(); // Load current roles.
+
+            var removedRoles = (user.Roles ?? new List<string>())
+                .Except(model.Roles ?? new List<string>())
+                .Where(r => r != "Admin")
+                .ToList();
+
+            var addedRoles = (model.Roles ?? new List<string>())
+                .Except(user.Roles ?? new List<string>())
+                .Where(r => r != "Admin")
+                .ToList();
+
+            await _userRepository.RemoveFromRolesAsync(user, removedRoles);
+            await _userRepository.AddToRolesAsync(user, addedRoles);
+
+            ViewBag.Success = "User updated successfully!"; 
+            return RedirectToAction("Details", new { id = user.Id });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Activate(string id)
+        {
+            if (id == null)
+            {
+                return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
+            }
+
+            var user = await _userRepository.GetByIdAsync(id);
+            if (user == null)
+            {
+                return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
+            }
+
+            await _userRepository.UnlockAsync(user);
+            user.Roles = (await _userRepository.GetRolesAsync(user)).ToList();
+
+            ViewBag.Success = "User activated successfully.";
+            return View("Details", user);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Deactivate(string id)
+        {
+            if (id == null)
+            {
+                return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
+            }
+
+            var user = await _userRepository.GetByIdAsync(id);
+            if (user == null)
+            {
+                return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
+            }
+
+            await _userRepository.LockOutAsync(user);
+            ViewBag.Success = "User deactivated successfully.";
+            user.Roles = (await _userRepository.GetRolesAsync(user)).ToList();
+            return View("Details", user);
         }
     }
 }

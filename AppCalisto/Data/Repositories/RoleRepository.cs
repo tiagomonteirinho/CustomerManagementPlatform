@@ -25,7 +25,7 @@ namespace AppCalisto.Data.Repositories
             return await _roleManager.CreateAsync(new IdentityRole { Name = role });
         }
 
-        public IEnumerable<SelectListItem> GetAll() // Synchronous method to return in-memory collection preloaded at startup.
+        public IEnumerable<SelectListItem> GetAll()
         {
             return _roleManager.Roles
                 .Select(r => new SelectListItem

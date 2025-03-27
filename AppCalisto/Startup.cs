@@ -100,7 +100,7 @@ namespace AppCalisto
             {
                 endpoints.MapControllerRoute(
                     name: "default",
-                    pattern: "{controller=Users}/{action=Login}/{id?}"); // Default page.
+                    pattern: "{controller=Account}/{action=Login}/{id?}"); // Default page.
             });
         }
     }
