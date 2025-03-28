@@ -55,14 +55,14 @@ namespace AppCalisto.Controllers
                 return View(model);
             }
 
-            var user = await _userRepository.GetByEmailAsync(model.Email);
-            if (user != null)
+            var existingUserByEmail = await _userRepository.GetByEmailAsync(model.Email);
+            if (existingUserByEmail != null)
             {
                 ViewBag.Failure = "That email is already being used.";
                 return View(model);
             }
 
-            user = new User
+            var user = new User
             {
                 Name = model.Name,
                 Email = model.Email,
@@ -165,8 +165,15 @@ namespace AppCalisto.Controllers
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
             }
 
-            var existingUser = await _userRepository.GetByEmailAsync(model.Email);
-            if (existingUser != null && existingUser != user)
+            user.Roles = (await _userRepository.GetRolesAsync(user)).ToList(); // Load user roles.
+            if (user.Name == model.Name && user.Email == model.Email && user.Roles == model.Roles)
+            {
+                ViewBag.Failure = "No changes were found.";
+                return View(model);
+            }
+
+            var existingUserByEmail = await _userRepository.GetByEmailAsync(model.Email);
+            if (existingUserByEmail != null && existingUserByEmail != user)
             {
                 ViewBag.Failure = "That email is already being used.";
                 return View(model);
@@ -182,13 +189,13 @@ namespace AppCalisto.Controllers
                 return View(model);
             }
 
-            user.Roles = (await _userRepository.GetRolesAsync(user)).ToList(); // Load current roles.
-
+            // Get user roles not included in the model.
             var removedRoles = (user.Roles ?? new List<string>())
                 .Except(model.Roles ?? new List<string>())
                 .Where(r => r != "Admin")
                 .ToList();
 
+            // Get model roles not included in the user.
             var addedRoles = (model.Roles ?? new List<string>())
                 .Except(user.Roles ?? new List<string>())
                 .Where(r => r != "Admin")
@@ -197,29 +204,8 @@ namespace AppCalisto.Controllers
             await _userRepository.RemoveFromRolesAsync(user, removedRoles);
             await _userRepository.AddToRolesAsync(user, addedRoles);
 
-            ViewBag.Success = "User updated successfully!"; 
-            return RedirectToAction("Details", new { id = user.Id });
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> Activate(string id)
-        {
-            if (id == null)
-            {
-                return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
-            }
-
-            var user = await _userRepository.GetByIdAsync(id);
-            if (user == null)
-            {
-                return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
-            }
-
-            await _userRepository.UnlockAsync(user);
-            user.Roles = (await _userRepository.GetRolesAsync(user)).ToList();
-
-            ViewBag.Success = "User activated successfully.";
-            return View("Details", user);
+            ViewBag.Success = "User updated successfully.";
+            return View(model);
         }
 
         [HttpPost]
@@ -236,10 +222,60 @@ namespace AppCalisto.Controllers
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
             }
 
-            await _userRepository.LockOutAsync(user);
-            ViewBag.Success = "User deactivated successfully.";
             user.Roles = (await _userRepository.GetRolesAsync(user)).ToList();
-            return View("Details", user);
+
+            if (await _userRepository.LockOutAsync(user) != IdentityResult.Success)
+            {
+                ViewBag.Failure = "Could not deactivate user.";
+            }
+
+            var model = new UserViewModel
+            {
+                Id = user.Id,
+                Name = user.Name,
+                Email = user.Email,
+                Roles = (await _userRepository.GetRolesAsync(user)).ToList(),
+                SelectableRoles = _roleRepository.GetAll().Where(r => r.Text != "Admin").ToList(),
+                LockoutEnd = user.LockoutEnd
+            };
+
+            ViewBag.Success = "User deactivated successfully.";
+            return View("Edit", model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Reactivate(string id)
+        {
+            if (id == null)
+            {
+                return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
+            }
+
+            var user = await _userRepository.GetByIdAsync(id);
+            if (user == null)
+            {
+                return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
+            }
+
+            user.Roles = (await _userRepository.GetRolesAsync(user)).ToList();
+
+            if (await _userRepository.UnlockAsync(user) != IdentityResult.Success)
+            {
+                ViewBag.Failure = "Could not reactivate user.";
+            }
+
+            var model = new UserViewModel
+            {
+                Id = user.Id,
+                Name = user.Name,
+                Email = user.Email,
+                Roles = (await _userRepository.GetRolesAsync(user)).ToList(),
+                SelectableRoles = _roleRepository.GetAll().Where(r => r.Text != "Admin").ToList(),
+                LockoutEnd = user.LockoutEnd
+            };
+
+            ViewBag.Success = "User reactivated successfully.";
+            return View("Edit", model);
         }
     }
 }

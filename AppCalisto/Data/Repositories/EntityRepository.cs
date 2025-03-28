@@ -1,7 +1,7 @@
 ﻿using AppCalisto.Data.Entities;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace AppCalisto.Data.Repositories
@@ -33,16 +33,38 @@ namespace AppCalisto.Data.Repositories
             await SaveAllAsync();
         }
 
-        public async Task UpdateAsync(T entity)
+        public async Task<bool> UpdateAsync(T entity)
         {
-            _context.Set<T>().Update(entity);
-            await SaveAllAsync();
+            try
+            {
+                _context.Set<T>().Update(entity);
+                return await SaveAllAsync();
+            }
+            catch (DbUpdateException)
+            {
+                return false;
+            }
+            catch (InvalidOperationException)
+            {
+                return false;
+            }
         }
 
-        public async Task DeleteAsync(T entity)
+        public async Task<bool> DeleteAsync(T entity)
         {
-            _context.Set<T>().Remove(entity);
-            await SaveAllAsync();
+            try
+            {
+                _context.Set<T>().Remove(entity);
+                return await SaveAllAsync();
+            }
+            catch (DbUpdateException)
+            {
+                return false;
+            }
+            catch (InvalidOperationException)
+            {
+                return false;
+            }
         }
 
         public async Task<bool> ExistsAsync(int id)

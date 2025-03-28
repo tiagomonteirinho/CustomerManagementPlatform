@@ -32,25 +32,15 @@
                         {
                             <tr>
                                 <td>@string.Join(", ", item.Roles ?? new List<string>())</td>
-                                <td>@Html.DisplayFor(modelItem => item.Name)</td>
-                                <td>@Html.DisplayFor(modelItem => item.Email)</td>
-                                <td>@Html.DisplayFor(modelItem => item.EmailConfirmed)</td>
+                                <td>@item.Name</td>
+                                <td>@item.Email</td>
                                 <td>
-                                    @if ((item.Roles ?? new List<string>()).Contains("Admin"))
-                                    {
-                                        <p>Always</p>
-                                    }
-                                    else
-                                    {
-                                        @if (item.LockoutEnd == null || item.LockoutEnd < DateTimeOffset.Now)
-                                        {
-                                            <input type="checkbox" disabled checked="checked" class="form-check-input" />
-                                        }
-                                        else
-                                        {
-                                            <input type="checkbox" disabled class="form-check-input" />
-                                        }
-                                    }
+                                    @(item.EmailConfirmed ? "Yes" : "No")
+                                </td>
+                                <td>
+                                    @((item.Roles ?? new List<string>()).Contains("Admin")
+                                        ? "Always"
+                                        : (item.LockoutEnd == null || item.LockoutEnd < DateTimeOffset.Now) ? "Yes" : "No")
                                 </td>
                                 <td>
                                     <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-primary">Details</a>

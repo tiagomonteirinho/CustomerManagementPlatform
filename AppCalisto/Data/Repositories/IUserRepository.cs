@@ -32,8 +32,6 @@ namespace AppCalisto.Data.Repositories
 
         Task<IdentityResult> UpdateAsync(User user);
 
-        Task<bool> IsLockedOutAsync(User user);
-
         Task<IdentityResult> LockOutAsync(User user);
 
         Task<IdentityResult> UnlockAsync(User user);

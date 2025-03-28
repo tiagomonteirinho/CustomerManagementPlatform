@@ -4,6 +4,8 @@ namespace AppCalisto.Models
 {
     public class ClientViewModel
     {
+        public int Id { get; set; }
+
         [Required]
         [MaxLength(99)]
         public string Name { get; set; }
@@ -12,6 +14,7 @@ namespace AppCalisto.Models
         public string ContactPerson { get; set; }
 
         [EmailAddress]
+        [DataType(DataType.EmailAddress)]
         public string Email { get; set; }
 
         [MaxLength(15)]

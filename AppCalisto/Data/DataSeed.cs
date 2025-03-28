@@ -104,8 +104,8 @@ namespace AppCalisto.Data
             {
                 var seedClients = new List<Client>
                 {
-                    new Client { Name = "Client 1", ContactPerson = "Person 1", Email = "client@mail", Phone = "987654321", Tax = "123456789" },
-                    new Client { Name = "Client 2", ContactPerson = "Person 2", Email = "client2@mail", Phone = "987654321", Tax = "123456789" }
+                    new Client { Name = "Client 1", ContactPerson = "Person 1", Email = "client@mail", Phone = "111111111", Tax = "111111111" },
+                    new Client { Name = "Client 2", ContactPerson = "Person 2", Email = "client2@mail", Phone = "222222222", Tax = "222222222" }
                 };
 
                 _context.Clients.AddRange(seedClients);

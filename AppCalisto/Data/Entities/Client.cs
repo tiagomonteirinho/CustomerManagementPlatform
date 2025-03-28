@@ -13,7 +13,6 @@ namespace AppCalisto.Data.Entities
         [MaxLength(99)]
         public string ContactPerson { get; set; }
 
-        [EmailAddress]
         public string Email { get; set; }
 
         [MaxLength(15)]

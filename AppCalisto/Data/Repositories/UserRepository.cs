@@ -87,11 +87,6 @@ namespace AppCalisto.Data.Repositories
             return await _userManager.UpdateAsync(user);
         }
 
-        public async Task<bool> IsLockedOutAsync(User user)
-        {
-            return await _userManager.IsLockedOutAsync(user);
-        }
-
         public async Task<IdentityResult> LockOutAsync(User user)
         {
             return await _userManager.SetLockoutEndDateAsync(user, DateTimeOffset.MaxValue);

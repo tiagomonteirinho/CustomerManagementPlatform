@@ -32,12 +32,12 @@
                         @foreach (var item in Model)
                         {
                             <tr>
-                                <td>@Html.DisplayFor(modelItem => item.Id)</td>
-                                <td>@Html.DisplayFor(modelItem => item.Name)</td>
-                                <td>@Html.DisplayFor(modelItem => item.ContactPerson)</td>
-                                <td>@Html.DisplayFor(modelItem => item.Email)</td>
-                                <td>@Html.DisplayFor(modelItem => item.Phone)</td>
-                                <td>@Html.DisplayFor(modelItem => item.Tax)</td>
+                                <td>@item.Id</td>
+                                <td>@item.Name</td>
+                                <td>@item.ContactPerson</td>
+                                <td>@item.Email</td>
+                                <td>@item.Phone</td>
+                                <td>@item.Tax</td>
                                 <td>
                                     <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-primary">Details</a>
                                 </td>
