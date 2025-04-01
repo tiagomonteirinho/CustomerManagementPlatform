@@ -1,0 +1,75 @@
+﻿@model AppCalisto.Models.OrderViewModel;
+@{
+    ViewData["Title"] = "Edit order";
+}
+
+<h2>@Model.Number</h2>
+<hr />
+@if (ViewBag.Success != null)
+{
+    <div class="alert alert-success">
+        @ViewBag.Success
+    </div>
+}
+@if (ViewBag.Failure != null)
+{
+    <div class="alert alert-danger">
+        @ViewBag.Failure
+    </div>
+}
+
+<div class="row">
+    <div class="col-md-4 offset-md-4">
+        <form method="post">
+            <div asp-validation-summary="ModelOnly"></div>
+
+            <div class="form-group">
+                <label asp-for="Number">Number</label>
+                <input asp-for="Number" class="form-control" />
+                <span asp-validation-for="Number" class="text-warning"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Execution">Execution</label>
+                <input asp-for="Execution" class="form-control" />
+                <span asp-validation-for="Execution" class="text-warning"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Type">Type</label>
+                <input asp-for="Type" class="form-control" />
+                <span asp-validation-for="Type" class="text-warning"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Location">Number</label>
+                <input asp-for="Location" class="form-control" />
+                <span asp-validation-for="Location" class="text-warning"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Description">Description</label>
+                <input asp-for="Description" class="form-control" />
+                <span asp-validation-for="Description" class="text-warning"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Status">Status</label>
+                <input asp-for="Status" class="form-control" />
+                <span asp-validation-for="Status" class="text-warning"></span>
+            </div>
+
+            <div class="form-group">
+                <input type="submit" value="Save changes" class="btn btn-primary" />
+                <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary">Back to details</a>
+            </div>
+        </form>
+        <div class="form-group">
+            <form method="post" asp-action="Delete">
+                <input type="hidden" name="id" value="@Model.Id" />
+                <input type="submit" value="Delete order" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this order?');" />
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

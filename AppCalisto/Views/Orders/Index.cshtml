@@ -1,14 +1,14 @@
-﻿@model IEnumerable<AppCalisto.Data.Entities.Client>
+﻿@model IEnumerable<AppCalisto.Data.Entities.Order>
 @{
     ViewData["Title"] = "Index";
 }
 
 <link rel="stylesheet" href="https://cdn.datatables.net/1.10.25/css/dataTables.bootstrap4.min.css" />
 
-<h2>All clients</h2>
+<h2>All orders</h2>
 <br />
 
-<a asp-action="Create" class="btn btn-primary">Create new client</a>
+<a asp-controller="Clients" asp-action="Index" class="btn btn-primary">Create new order</a>
 <br />
 <br />
 
@@ -20,11 +20,14 @@
                     <thead>
                         <tr>
                             <th>Id</th>
-                            <th>Name</th>
-                            <th>Contact person</th>
-                            <th>Email</th>
-                            <th>Phone</th>
-                            <th>Tax</th>
+                            <th>Number</th>
+                            <th>Client</th>
+                            <th>Creation</th>
+                            <th>Execution</th>
+                            <th>Type</th>
+                            <th>Location</th>
+                            <th>Description</th>
+                            <th>Status</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -33,13 +36,22 @@
                         {
                             <tr>
                                 <td>@item.Id</td>
-                                <td>@item.Name</td>
-                                <td>@item.ContactPerson</td>
-                                <td>@item.Email</td>
-                                <td>@item.Phone</td>
-                                <td>@item.Tax</td>
+                                <td>@item.Number</td>
                                 <td>
-                                    <a asp-controller="Orders" asp-action="Create" asp-route-clientId="@item.Id" class="btn btn-sm btn-primary">Add order</a>
+                                    <a asp-controller="Clients" asp-action="Details" asp-route-id="@item.Client.Id">@item.Client.Name (ID @item.Client.Id)</a>
+                                </td>
+                                <td>@item.Creation</td>
+                                <td>
+                                    @if (item.Execution >= item.Creation)
+                                    {
+                                        @item.Execution
+                                    }
+                                    </td>
+                                <td>@item.Type</td>
+                                <td>@item.Location</td>
+                                <td>@item.Description</td>
+                                <td>@item.Status</td>
+                                <td>
                                     <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">Details</a>
                                 </td>
                             </tr>

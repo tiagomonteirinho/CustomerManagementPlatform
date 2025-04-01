@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace AppCalisto.Controllers
 {
-    [Authorize(Roles = "PT Informática, Global Eletrik, Eficaz")]
+    [Authorize(Roles = "Back-office")]
     public class ClientsController : Controller
     {
         private readonly IClientRepository _clientRepository;
@@ -98,7 +98,7 @@ namespace AppCalisto.Controllers
             var client = await _clientRepository.GetByIdAsync(id.Value);
             if (client == null)
             {
-                return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
+                return RedirectToAction("NotFound404", "Errors", new { entityName = "Client" });
             }
 
             var model = new ClientViewModel

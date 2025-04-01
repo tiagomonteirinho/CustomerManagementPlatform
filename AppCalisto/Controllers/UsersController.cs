@@ -5,7 +5,9 @@ using AppCalisto.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -38,17 +40,18 @@ namespace AppCalisto.Controllers
 
         public IActionResult Create()
         {
-            return View(new UserViewModel
+            var model = new UserViewModel
             {
-                Roles = new List<string>(),
-                SelectableRoles = _roleRepository.GetAll()
-            });
+                SelectableRoles = _roleRepository.GetAll() ?? new List<SelectListItem>()
+            };
+
+            return View(model);
         }
 
         [HttpPost]
         public async Task<IActionResult> Create(UserViewModel model)
         {
-            model.SelectableRoles = _roleRepository.GetAll(); // Update view roles.
+            model.SelectableRoles = _roleRepository.GetAll() ?? new List<SelectListItem>(); // Update view roles.
             if (!ModelState.IsValid)
             {
                 ViewBag.Failure = "Could not create user.";
@@ -141,8 +144,8 @@ namespace AppCalisto.Controllers
                 Id = user.Id,
                 Name = user.Name,
                 Email = user.Email,
-                Roles = (await _userRepository.GetRolesAsync(user)).ToList(),
-                SelectableRoles = _roleRepository.GetAll().Where(r => r.Text != "Admin").ToList(),
+                Roles = (await _userRepository.GetRolesAsync(user)).ToList() ?? new List<string>(),
+                SelectableRoles = _roleRepository.GetAll().Where(r => r.Text != "Admin").ToList() ?? new List<SelectListItem>(),
                 LockoutEnd = user.LockoutEnd
             };
 
@@ -152,7 +155,10 @@ namespace AppCalisto.Controllers
         [HttpPost]
         public async Task<IActionResult> Edit(UserViewModel model)
         {
-            model.SelectableRoles = _roleRepository.GetAll().Where(r => r.Text != "Admin").ToList(); // Update view roles.
+            // Update view lists.
+            model.Roles = model.Roles ?? new List<string>();
+            model.SelectableRoles = _roleRepository.GetAll().Where(r => r.Text != "Admin").ToList() ?? new List<SelectListItem>();
+
             if (!ModelState.IsValid)
             {
                 ViewBag.Failure = "Could not update user.";
@@ -166,7 +172,7 @@ namespace AppCalisto.Controllers
             }
 
             user.Roles = (await _userRepository.GetRolesAsync(user)).ToList(); // Load user roles.
-            if (user.Name == model.Name && user.Email == model.Email && user.Roles == model.Roles)
+            if (user.Name == model.Name && user.Email == model.Email && user.Roles.OrderBy(r => r).SequenceEqual(model.Roles.OrderBy(r => r)))
             {
                 ViewBag.Failure = "No changes were found.";
                 return View(model);

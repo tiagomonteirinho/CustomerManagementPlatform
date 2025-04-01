@@ -3,9 +3,10 @@
     ViewData["Title"] = "Details";
 }
 
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.25/css/dataTables.bootstrap4.min.css" />
+
 <h2>@Model.Name</h2>
 <hr />
-
 <div>
     <dl class="row">
         <dt class="col-sm-2">Id</dt>
@@ -26,3 +27,65 @@
     <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Edit</a>
     <a asp-action="Index" class="btn btn-secondary">Back to list</a>
 </div>
+
+<div class="form-group">
+    <h3>Orders</h3>
+    <a asp-controller="Orders" asp-action="Create" asp-route-clientId="@Model.Id" class="btn btn-primary">Create new order</a>
+</div>
+@if (Model.Orders == null || Model.Orders.Count == 0)
+{
+    <h5>This client does not contain any orders.</h5>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <table class="table table-hover table-responsive-lg" id="MyTable">
+                        <thead>
+                            <tr>
+                                <th>Id</th>
+                                <th>Number</th>
+                                <th>Creation</th>
+                                <th>Execution</th>
+                                <th>Type</th>
+                                <th>Location</th>
+                                <th>Description</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.Orders.OrderBy(m => m.Id))
+                            {
+                                <tr>
+                                    <td>@item.Id</td>
+                                    <td>@item.Number</td>
+                                    <td>@item.Creation</td>
+                                    <td>@item.Execution</td>
+                                    <td>@item.Type</td>
+                                    <td>@item.Location</td>
+                                    <td>@item.Description</td>
+                                    <td>@item.Status</td>
+                                    <td>
+                                        <a asp-controller="Orders" asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">Details</a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.25/js/dataTables.bootstrap4.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#MyTable').DataTable();
+        });
+    </script>
+}

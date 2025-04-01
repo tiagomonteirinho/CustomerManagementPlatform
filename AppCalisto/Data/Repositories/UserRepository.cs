@@ -12,11 +12,13 @@ namespace AppCalisto.Data.Repositories
     {
         private readonly SignInManager<User> _signInManager;
         private readonly UserManager<User> _userManager;
+        private readonly DataContext _context;
 
-        public UserRepository(SignInManager<User> signInManager, UserManager<User> userManager)
+        public UserRepository(SignInManager<User> signInManager, UserManager<User> userManager, DataContext dataContext)
         {
             _signInManager = signInManager;
             _userManager = userManager;
+            _context = dataContext;
         }
 
         public async Task<SignInResult> LoginAsync(LoginViewModel model)
@@ -56,18 +58,17 @@ namespace AppCalisto.Data.Repositories
 
         public async Task<List<User>> GetAllAsync()
         {
-            var list = await _userManager.Users.ToListAsync();
-            return list;
+            return await _context.Users.ToListAsync();
         }
 
         public async Task<User> GetByEmailAsync(string email)
         {
-            return await _userManager.FindByEmailAsync(email);
+            return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
         }
 
         public async Task<User> GetByIdAsync(string id)
         {
-            return await _userManager.FindByIdAsync(id);
+            return await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
         }
 
         public async Task<IdentityResult> CreateAsync(User user, string password)

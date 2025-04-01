@@ -28,7 +28,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var item in Model)
+                        @foreach (var item in Model.OrderBy(i => i.Name))
                         {
                             <tr>
                                 <td>@string.Join(", ", item.Roles ?? new List<string>())</td>
@@ -43,7 +43,7 @@
                                         : (item.LockoutEnd == null || item.LockoutEnd < DateTimeOffset.Now) ? "Yes" : "No")
                                 </td>
                                 <td>
-                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-primary">Details</a>
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">Details</a>
                                 </td>
                             </tr>
                         }

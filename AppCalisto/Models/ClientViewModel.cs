@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using AppCalisto.Data.Entities;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace AppCalisto.Models
 {
@@ -22,5 +24,7 @@ namespace AppCalisto.Models
 
         [MaxLength(15)]
         public string Tax { get; set; }
+
+        public ICollection<Order> Orders { get; set; }
     }
 }

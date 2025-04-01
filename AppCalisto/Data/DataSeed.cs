@@ -28,11 +28,12 @@ namespace AppCalisto.Data
             await CreateRoles();
             await CreateUsers();
             await CreateClients();
+            await CreateOrders();
         }
 
         public async Task CreateRoles()
         {
-            var seedRoles = new List<string> { "Admin", "PT Informática", "Global Eletrik", "Eficaz" };
+            var seedRoles = new List<string> { "Admin", "Back-office", "Front-office" };
             foreach (var role in seedRoles)
             {
                 if (!await _roleRepository.ExistsAsync(role))
@@ -49,9 +50,9 @@ namespace AppCalisto.Data
             {
                 var seedUsers = new List<(string name, string email, IEnumerable<string> roles)>
                 {
-                    ("Admin", "admin@mail", new List<string> { "Admin", "PT Informática", "Global Eletrik", "Eficaz" }),
-                    ("Employee", "employee@mail", new List<string> { "PT Informática" }),
-                    ("Employee 2", "employee2@mail", new List<string> { "Global Eletrik", "Eficaz" })
+                    ("Admin", "admin@mail", new List<string> { "Admin", "Back-office", "Front-office" }),
+                    ("Employee", "employee@mail", new List<string> { "Back-office", "Front-office" }),
+                    ("Employee 2", "employee2@mail", new List<string> { "Back-office" })
                 };
 
                 foreach (var (name, email, roles) in seedUsers)
@@ -108,7 +109,33 @@ namespace AppCalisto.Data
                     new Client { Name = "Client 2", ContactPerson = "Person 2", Email = "client2@mail", Phone = "222222222", Tax = "222222222" }
                 };
 
-                _context.Clients.AddRange(seedClients);
+                _context.Clients.AddRange(seedClients.AsEnumerable().Reverse());
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        public async Task CreateOrders()
+        {
+            if (!await _context.Orders.AnyAsync())
+            {
+                var seedOrders = new List<Order>
+                {
+                    new Order { Number = "111", Type = "Maintenance", Location = "Client 1's Office", Description = "Systems maintenance.", Status = "Ongoing", ClientId = 1 },
+                    new Order { Number = "222", Type = "Software Development", Location = "Client 2's Office", Description = "Application development.", Status = "Ongoing", ClientId = 2 }
+                };
+
+                foreach (var order in seedOrders)
+                {
+                    var client = await _context.Clients.FirstOrDefaultAsync(c => c.Id == order.ClientId);
+                    if (client == null)
+                    {
+                        throw new InvalidOperationException($"Could not add seed order to client.");
+                    }
+
+                    order.Client = client;
+                }
+
+                _context.Orders.AddRange(seedOrders.AsEnumerable().Reverse());
                 await _context.SaveChangesAsync();
             }
         }

@@ -13,14 +13,25 @@ namespace AppCalisto.Data.Repositories
             _context = context;
         }
 
+        public async Task<Client> GetByIdAsync(int id)
+        {
+            return await _context.Clients
+                .Include(c => c.Orders)
+                .FirstOrDefaultAsync(c => c.Id == id);
+        }
+
         public async Task<Client> GetByEmailAsync(string email)
         {
-            return await _context.Clients.FirstOrDefaultAsync(c => c.Email == email);
+            return await _context.Clients
+                .Include(c => c.Orders)
+                .FirstOrDefaultAsync(c => c.Email == email);
         }
 
         public async Task<Client> GetByTaxAsync(string tax)
         {
-            return await _context.Clients.FirstOrDefaultAsync(c => c.Tax == tax);
+            return await _context.Clients
+                .Include(c => c.Orders)
+                .FirstOrDefaultAsync(c => c.Tax == tax);
         }
     }
 }

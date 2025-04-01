@@ -18,8 +18,8 @@ namespace AppCalisto.Models
         [DataType(DataType.EmailAddress)]
         public string Email { get; set; }
 
-        [Required(ErrorMessage = "At least one role must be selected")]
-        public List<string> Roles { get; set; } = new List<string>();
+        [Required(ErrorMessage = "At least one role must be selected.")]
+        public List<string> Roles { get; set; }
 
         public IEnumerable<SelectListItem> SelectableRoles { get; set; }
 
