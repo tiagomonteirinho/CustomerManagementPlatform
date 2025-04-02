@@ -22,6 +22,7 @@
                             <th>Id</th>
                             <th>Number</th>
                             <th>Client</th>
+                            <th>Company</th>
                             <th>Creation</th>
                             <th>Execution</th>
                             <th>Type</th>
@@ -40,6 +41,7 @@
                                 <td>
                                     <a asp-controller="Clients" asp-action="Details" asp-route-id="@item.Client.Id">@item.Client.Name (ID @item.Client.Id)</a>
                                 </td>
+                                <td>@item.Company</td>
                                 <td>@item.Creation</td>
                                 <td>
                                     @if (item.Execution >= item.Creation)

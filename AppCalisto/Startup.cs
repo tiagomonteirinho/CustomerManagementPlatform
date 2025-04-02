@@ -64,6 +64,7 @@ namespace AppCalisto
             services.AddScoped<IOrderRepository, OrderRepository>();
 
             services.AddScoped<IMailHelper, MailHelper>();
+            services.AddScoped<ICompanyHelper, CompanyHelper>();
 
             services.ConfigureApplicationCookie(cfg =>
             {

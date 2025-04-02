@@ -40,18 +40,17 @@ namespace AppCalisto.Controllers
 
         public IActionResult Create()
         {
-            var model = new UserViewModel
+            return View(new UserViewModel
             {
                 SelectableRoles = _roleRepository.GetAll() ?? new List<SelectListItem>()
-            };
-
-            return View(model);
+            });
         }
 
         [HttpPost]
         public async Task<IActionResult> Create(UserViewModel model)
         {
             model.SelectableRoles = _roleRepository.GetAll() ?? new List<SelectListItem>(); // Update view roles.
+
             if (!ModelState.IsValid)
             {
                 ViewBag.Failure = "Could not create user.";

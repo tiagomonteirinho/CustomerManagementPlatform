@@ -105,8 +105,8 @@ namespace AppCalisto.Data
             {
                 var seedClients = new List<Client>
                 {
-                    new Client { Name = "Client 1", ContactPerson = "Person 1", Email = "client@mail", Phone = "111111111", Tax = "111111111" },
-                    new Client { Name = "Client 2", ContactPerson = "Person 2", Email = "client2@mail", Phone = "222222222", Tax = "222222222" }
+                    new Client { Name = "Client 1", ContactPerson = "Person 1", Email = "client@mail", Phone = "111111111", Tax = "111111111", Companies = "PT Informática, Global Eletrik" },
+                    new Client { Name = "Client 2", ContactPerson = "Person 2", Email = "client2@mail", Phone = "222222222", Tax = "222222222", Companies = "Eficaz" }
                 };
 
                 _context.Clients.AddRange(seedClients.AsEnumerable().Reverse());
@@ -120,8 +120,9 @@ namespace AppCalisto.Data
             {
                 var seedOrders = new List<Order>
                 {
-                    new Order { Number = "111", Type = "Maintenance", Location = "Client 1's Office", Description = "Systems maintenance.", Status = "Ongoing", ClientId = 1 },
-                    new Order { Number = "222", Type = "Software Development", Location = "Client 2's Office", Description = "Application development.", Status = "Ongoing", ClientId = 2 }
+                    new Order { Number = "Order 1", Type = "Software Development", Location = "Client 1's Office", Description = "Application development.", Status = "Ongoing", ClientId = 1, Company = "PT Informática" },
+                    new Order { Number = "Order 2", Type = "Server Maintenance", Location = "Client 1's Office", Description = "Eletric stove repairing.", Status = "Ongoing", ClientId = 1, Company = "Global Eletrik" },
+                    new Order { Number = "Order 3", Type = "Device Repairing", Location = "Client 2's Office", Description = "Server systems maintenance.", Status = "Ongoing", ClientId = 2, Company = "Eficaz" }
                 };
 
                 foreach (var order in seedOrders)

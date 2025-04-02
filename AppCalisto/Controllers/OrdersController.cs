@@ -3,6 +3,9 @@ using AppCalisto.Data.Repositories;
 using AppCalisto.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace AppCalisto.Controllers
@@ -21,8 +24,7 @@ namespace AppCalisto.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var model = await _orderRepository.GetAllAsync();
-            return View(model);
+            return View(await _orderRepository.GetAllAsync());
         }
 
         public async Task<IActionResult> Create(int? clientId)
@@ -38,17 +40,18 @@ namespace AppCalisto.Controllers
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "Client" });
             }
 
-            var model = new OrderViewModel
+            return View(new OrderViewModel
             {
                 ClientId = clientId,
-            };
-
-            return View(model);
+                SelectableCompanies = _clientRepository.GetCompanies(clientId).ToList()
+            });
         }
 
         [HttpPost]
         public async Task<IActionResult> Create(OrderViewModel model)
         {
+            model.SelectableCompanies = _clientRepository.GetCompanies(model.ClientId).ToList();
+
             if (!ModelState.IsValid)
             {
                 ViewBag.Failure = "Could not create order.";
@@ -73,7 +76,8 @@ namespace AppCalisto.Controllers
                 Description = model.Description,
                 Status = model.Status,
                 ClientId = model.ClientId,
-                Client = model.Client
+                Client = model.Client,
+                Company = model.Company
             };
 
             await _orderRepository.CreateAsync(order);
@@ -84,7 +88,11 @@ namespace AppCalisto.Controllers
             }
 
             ViewBag.Success = "Order created successfully!";
-            return View(model);
+            return View(new OrderViewModel
+            {
+                ClientId = model.ClientId,
+                SelectableCompanies = _clientRepository.GetCompanies(model.ClientId).ToList()
+            });
         }
 
         public async Task<IActionResult> Details(int? id)
@@ -111,7 +119,7 @@ namespace AppCalisto.Controllers
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "Order" });
             }
 
-            var model = new OrderViewModel
+            return View(new OrderViewModel
             {
                 Id = order.Id,
                 Number = order.Number,
@@ -119,15 +127,18 @@ namespace AppCalisto.Controllers
                 Type = order.Type,
                 Location = order.Location,
                 Description = order.Description,
-                Status = order.Status
-            };
-
-            return View(model);
+                Status = order.Status,
+                ClientId = order.ClientId,
+                Company = order.Company,
+                SelectableCompanies = _clientRepository.GetCompanies(order.ClientId).ToList()
+            });
         }
 
         [HttpPost]
         public async Task<IActionResult> Edit(OrderViewModel model)
         {
+            model.SelectableCompanies = _clientRepository.GetCompanies(model.ClientId).ToList();
+
             if (!ModelState.IsValid)
             {
                 ViewBag.Failure = "Could not update order.";
@@ -140,7 +151,7 @@ namespace AppCalisto.Controllers
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "Order" });
             }
 
-            if (order.Number == model.Number && order.Execution == model.Execution && order.Type == model.Type && order.Location == model.Location && order.Description == model.Description && order.Status == model.Status)
+            if (order.Number == model.Number && order.Execution == model.Execution && order.Type == model.Type && order.Location == model.Location && order.Description == model.Description && order.Status == model.Status && order.Company == model.Company)
             {
                 ViewBag.Failure = "No changes were found.";
                 return View(model);
@@ -162,6 +173,7 @@ namespace AppCalisto.Controllers
             order.Location = model.Location;
             order.Description = model.Description;
             order.Status = model.Status;
+            order.Company = model.Company;
 
             if (!await _orderRepository.UpdateAsync(order))
             {

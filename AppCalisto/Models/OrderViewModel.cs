@@ -1,5 +1,7 @@
 ﻿using AppCalisto.Data.Entities;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace AppCalisto.Models
@@ -25,5 +27,10 @@ namespace AppCalisto.Models
         public Client Client { get; set; }
 
         public int? ClientId { get; set; }
+
+        [Required(ErrorMessage = "A company must be selected!")]
+        public string Company { get; set; }
+
+        public IEnumerable<SelectListItem> SelectableCompanies { get; set; }
     }
 }

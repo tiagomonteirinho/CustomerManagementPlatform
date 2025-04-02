@@ -1,8 +1,12 @@
 ﻿using AppCalisto.Data.Entities;
 using AppCalisto.Data.Repositories;
+using AppCalisto.Helpers;
 using AppCalisto.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace AppCalisto.Controllers
@@ -11,26 +15,32 @@ namespace AppCalisto.Controllers
     public class ClientsController : Controller
     {
         private readonly IClientRepository _clientRepository;
+        private readonly ICompanyHelper _companyHelper;
 
-        public ClientsController(IClientRepository clientRepository)
+        public ClientsController(IClientRepository clientRepository, ICompanyHelper companyHelper)
         {
             _clientRepository = clientRepository;
+            _companyHelper = companyHelper;
         }
 
         public async Task<IActionResult> Index()
         {
-            var model = await _clientRepository.GetAllAsync();
-            return View(model);
+            return View(await _clientRepository.GetAllAsync());
         }
 
         public IActionResult Create()
         {
-            return View(new ClientViewModel());
+            return View(new ClientViewModel 
+            {
+                SelectableCompanies = _companyHelper.GetAll() ?? new List<SelectListItem>()
+            });
         }
 
         [HttpPost]
         public async Task<IActionResult> Create(ClientViewModel model)
         {
+            model.SelectableCompanies = _companyHelper.GetAll() ?? new List<SelectListItem>();
+
             if (!ModelState.IsValid)
             {
                 ViewBag.Failure = "Could not create client.";
@@ -57,13 +67,20 @@ namespace AppCalisto.Controllers
                 }
             }
 
+            if (model.Companies == null || !model.Companies.Any())
+            {
+                ViewBag.Failure = "At least one company must be selected!";
+                return View(model);
+            }
+
             var client = new Client()
             {
                 Name = model.Name,
                 ContactPerson = model.ContactPerson,
                 Email = model.Email,
                 Phone = model.Phone,
-                Tax = model.Tax
+                Tax = model.Tax,
+                Companies = string.Join(", ", model.Companies ?? new List<string>())
             };
 
             await _clientRepository.CreateAsync(client);
@@ -74,7 +91,10 @@ namespace AppCalisto.Controllers
             }
 
             ViewBag.Success = "Client created successfully!";
-            return View();
+            return View(new ClientViewModel
+            {
+                SelectableCompanies = _companyHelper.GetAll() ?? new List<SelectListItem>()
+            });
         }
 
         public async Task<IActionResult> Details(int? id)
@@ -108,7 +128,9 @@ namespace AppCalisto.Controllers
                 ContactPerson = client.ContactPerson,
                 Email = client.Email,
                 Phone = client.Phone,
-                Tax = client.Tax
+                Tax = client.Tax,
+                Companies = string.IsNullOrEmpty(client.Companies) ? new List<string>() : client.Companies.Split(", ").ToList(),
+                SelectableCompanies = _companyHelper.GetAll() ?? new List<SelectListItem>()
             };
 
             return View(model);
@@ -117,6 +139,8 @@ namespace AppCalisto.Controllers
         [HttpPost]
         public async Task<IActionResult> Edit(ClientViewModel model)
         {
+            model.SelectableCompanies = _companyHelper.GetAll() ?? new List<SelectListItem>();
+
             if (!ModelState.IsValid)
             {
                 ViewBag.Failure = "Could not update client.";
@@ -129,7 +153,8 @@ namespace AppCalisto.Controllers
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "Client" });
             }
 
-            if (client.Name == model.Name && client.ContactPerson == model.ContactPerson && client.Email == model.Email && client.Phone == model.Phone && client.Tax == model.Tax)
+            if (client.Name == model.Name && client.ContactPerson == model.ContactPerson && client.Email == model.Email && client.Phone == model.Phone && client.Tax == model.Tax
+                && client.Companies == string.Join(", ", model.Companies))
             {
                 ViewBag.Failure = "No changes were found.";
                 return View(model);
@@ -155,11 +180,18 @@ namespace AppCalisto.Controllers
                 }
             }
 
+            if (model.Companies == null || !model.Companies.Any())
+            {
+                ViewBag.Failure = "At least one company must be selected!";
+                return View(model);
+            }
+
             client.Name = model.Name;
             client.ContactPerson = model.ContactPerson;
             client.Email = model.Email;
             client.Phone = model.Phone;
             client.Tax = model.Tax;
+            client.Companies = model.Companies != null ? string.Join(", ", model.Companies) : "";
 
             if (!await _clientRepository.UpdateAsync(client))
             {

@@ -22,6 +22,7 @@
     <div class="col-md-4 offset-md-4">
         <form method="post">
             <div asp-validation-summary="ModelOnly"></div>
+            <input type="hidden" asp-for="ClientId" />
 
             <div class="form-group">
                 <label asp-for="Number">Number</label>
@@ -52,6 +53,11 @@
                 <label asp-for="Status">Status</label>
                 <input asp-for="Status" class="form-control" />
                 <span asp-validation-for="Status" class="text-warning"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Company">Company</label>
+                <select asp-for="Company" asp-items="Model.SelectableCompanies" class="form-control"></select>
+                <span asp-validation-for="Company" class="text-warning"></span>
             </div>
 
             <div class="form-group">

@@ -23,5 +23,7 @@ namespace AppCalisto.Data.Entities
         public string Tax { get; set; }
 
         public ICollection<Order> Orders { get; set; }
+
+        public string Companies { get; set; }
     }
 }

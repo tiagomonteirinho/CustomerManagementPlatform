@@ -26,5 +26,7 @@ namespace AppCalisto.Data.Entities
         public Client Client { get; set; }
 
         public int? ClientId { get; set; }
+
+        public string Company { get; set; }
     }
 }
