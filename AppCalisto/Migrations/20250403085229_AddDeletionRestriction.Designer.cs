@@ -4,14 +4,16 @@ using AppCalisto.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace AppCalisto.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20250403085229_AddDeletionRestriction")]
+    partial class AddDeletionRestriction
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -61,9 +63,6 @@ namespace AppCalisto.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<DateTime>("Appointment")
-                        .HasColumnType("datetime2");
-
                     b.Property<int>("ClientId")
                         .HasColumnType("int");
 
@@ -78,9 +77,6 @@ namespace AppCalisto.Migrations
 
                     b.Property<DateTime>("Execution")
                         .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsUrgent")
-                        .HasColumnType("bit");
 
                     b.Property<string>("Location")
                         .HasColumnType("nvarchar(max)");

@@ -3,8 +3,6 @@ using AppCalisto.Data.Repositories;
 using AppCalisto.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -42,7 +40,7 @@ namespace AppCalisto.Controllers
 
             return View(new OrderViewModel
             {
-                ClientId = clientId,
+                ClientId = clientId.Value,
                 SelectableCompanies = _clientRepository.GetCompanies(clientId).ToList()
             });
         }
@@ -71,6 +69,8 @@ namespace AppCalisto.Controllers
             var order = new Order()
             {
                 Number = model.Number,
+                Appointment = model.Appointment,
+                IsUrgent = model.IsUrgent,
                 Type = model.Type,
                 Location = model.Location,
                 Description = model.Description,
@@ -124,6 +124,8 @@ namespace AppCalisto.Controllers
                 Id = order.Id,
                 Number = order.Number,
                 Execution = order.Execution,
+                Appointment = order.Appointment,
+                IsUrgent = order.IsUrgent,
                 Type = order.Type,
                 Location = order.Location,
                 Description = order.Description,
@@ -151,7 +153,7 @@ namespace AppCalisto.Controllers
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "Order" });
             }
 
-            if (order.Number == model.Number && order.Execution == model.Execution && order.Type == model.Type && order.Location == model.Location && order.Description == model.Description && order.Status == model.Status && order.Company == model.Company)
+            if (order.Number == model.Number && order.Execution == model.Execution && order.Appointment == model.Appointment && order.IsUrgent == model.IsUrgent && order.Type == model.Type && order.Location == model.Location && order.Description == model.Description && order.Status == model.Status && order.Company == model.Company)
             {
                 ViewBag.Failure = "No changes were found.";
                 return View(model);
@@ -169,6 +171,8 @@ namespace AppCalisto.Controllers
 
             order.Number = model.Number;
             order.Execution = model.Execution;
+            order.Appointment = model.Appointment;
+            order.IsUrgent = model.IsUrgent;
             order.Type = model.Type;
             order.Location = model.Location;
             order.Description = model.Description;
@@ -200,7 +204,7 @@ namespace AppCalisto.Controllers
                 return View("Edit", order);
             }
 
-            ViewBag.Success = "Order updated successfully.";
+            ViewBag.Success = "Order deleted successfully.";
             return RedirectToAction($"Index");
         }
     }

@@ -15,6 +15,10 @@ namespace AppCalisto.Models
 
         public DateTime Execution { get; set; }
 
+        public DateTime Appointment { get; set; }
+
+        public bool IsUrgent { get; set; }
+
         [Required]
         public string Type { get; set; }
 
@@ -26,7 +30,7 @@ namespace AppCalisto.Models
 
         public Client Client { get; set; }
 
-        public int? ClientId { get; set; }
+        public int ClientId { get; set; }
 
         [Required(ErrorMessage = "A company must be selected!")]
         public string Company { get; set; }

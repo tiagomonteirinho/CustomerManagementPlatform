@@ -215,10 +215,20 @@ namespace AppCalisto.Controllers
             if (!await _clientRepository.DeleteAsync(client))
             {
                 ViewBag.Failure = "Could not delete client. This may be due to database constraints or the entity no longer existing.";
-                return View("Edit", client);
+                return View("Edit", new ClientViewModel
+                {
+                    Id = client.Id,
+                    Name = client.Name,
+                    ContactPerson = client.ContactPerson,
+                    Email = client.Email,
+                    Phone = client.Phone,
+                    Tax = client.Tax,
+                    Companies = string.IsNullOrEmpty(client.Companies) ? new List<string>() : client.Companies.Split(", ").ToList(),
+                    SelectableCompanies = _companyHelper.GetAll() ?? new List<SelectListItem>()
+                });
             }
 
-            ViewBag.Success = "Client updated successfully.";
+            ViewBag.Success = "Client deleted successfully.";
             return RedirectToAction($"Index");
         }
     }

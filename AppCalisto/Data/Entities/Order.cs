@@ -14,6 +14,10 @@ namespace AppCalisto.Data.Entities
 
         public DateTime Execution { get; set; }
 
+        public DateTime Appointment { get; set; }
+
+        public bool IsUrgent { get; set; }
+
         [Required]
         public string Type { get; set; }
 
@@ -25,7 +29,7 @@ namespace AppCalisto.Data.Entities
 
         public Client Client { get; set; }
 
-        public int? ClientId { get; set; }
+        public int ClientId { get; set; }
 
         public string Company { get; set; }
     }
