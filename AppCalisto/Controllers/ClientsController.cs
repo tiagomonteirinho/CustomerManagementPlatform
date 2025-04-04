@@ -153,8 +153,7 @@ namespace AppCalisto.Controllers
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "Client" });
             }
 
-            if (client.Name == model.Name && client.ContactPerson == model.ContactPerson && client.Email == model.Email && client.Phone == model.Phone && client.Tax == model.Tax
-                && client.Companies == string.Join(", ", model.Companies))
+            if (client.Name == model.Name && client.ContactPerson == model.ContactPerson && client.Email == model.Email && client.Phone == model.Phone && client.Tax == model.Tax && client.Companies == string.Join(", ", model.Companies))
             {
                 ViewBag.Failure = "No changes were found.";
                 return View(model);

@@ -18,12 +18,14 @@ namespace AppCalisto.Controllers
     {
         private readonly IUserRepository _userRepository;
         private readonly IRoleRepository _roleRepository;
+        private readonly ICompanyHelper _companyHelper;
         private readonly IMailHelper _mailHelper;
 
-        public UsersController(IUserRepository userRepository, IRoleRepository roleRepository, IMailHelper mailHelper)
+        public UsersController(IUserRepository userRepository, IRoleRepository roleRepository, ICompanyHelper companyHelper, IMailHelper mailHelper)
         {
             _userRepository = userRepository;
             _roleRepository = roleRepository;
+            _companyHelper = companyHelper;
             _mailHelper = mailHelper;
         }
 
@@ -42,14 +44,17 @@ namespace AppCalisto.Controllers
         {
             return View(new UserViewModel
             {
-                SelectableRoles = _roleRepository.GetAll() ?? new List<SelectListItem>()
+                SelectableRoles = _roleRepository.GetAll() ?? new List<SelectListItem>(),
+                SelectableCompanies = _companyHelper.GetAll() ?? new List<SelectListItem>()
             });
         }
 
         [HttpPost]
         public async Task<IActionResult> Create(UserViewModel model)
-        {
-            model.SelectableRoles = _roleRepository.GetAll() ?? new List<SelectListItem>(); // Update view roles.
+        { 
+            // Load view lists.
+            model.SelectableRoles = _roleRepository.GetAll() ?? new List<SelectListItem>();
+            model.SelectableCompanies = _companyHelper.GetAll() ?? new List<SelectListItem>();
 
             if (!ModelState.IsValid)
             {
@@ -64,11 +69,18 @@ namespace AppCalisto.Controllers
                 return View(model);
             }
 
+            if (model.Roles.Contains("Front-office") && (model.Companies == null || !model.Companies.Any()))
+            {
+                ViewBag.Failure = "At least one company must be selected for front-office users!";
+                return View(model);
+            }
+
             var user = new User
             {
                 Name = model.Name,
                 Email = model.Email,
                 UserName = model.Email,
+                Companies = model.Roles.Contains("Front-office") ? string.Join(", ", model.Companies) : ""
             };
 
             if (await _userRepository.CreateAsync(user, null) != IdentityResult.Success)
@@ -108,8 +120,10 @@ namespace AppCalisto.Controllers
             ViewBag.Success = "User created successfully!";
             ModelState.Clear(); // Clear view form.
             return View(new UserViewModel
-            {
-                SelectableRoles = _roleRepository.GetAll() // Update view roles.
+            { 
+                // Update view lists.
+                SelectableRoles = _roleRepository.GetAll() ?? new List<SelectListItem>(),
+                SelectableCompanies = _companyHelper.GetAll() ?? new List<SelectListItem>()
             });
         }
 
@@ -145,6 +159,8 @@ namespace AppCalisto.Controllers
                 Email = user.Email,
                 Roles = (await _userRepository.GetRolesAsync(user)).ToList() ?? new List<string>(),
                 SelectableRoles = _roleRepository.GetAll().Where(r => r.Text != "Admin").ToList() ?? new List<SelectListItem>(),
+                Companies = string.IsNullOrEmpty(user.Companies) ? new List<string>() : user.Companies.Split(", ").ToList(),
+                SelectableCompanies = _companyHelper.GetAll() ?? new List<SelectListItem>(),
                 LockoutEnd = user.LockoutEnd
             };
 
@@ -154,9 +170,10 @@ namespace AppCalisto.Controllers
         [HttpPost]
         public async Task<IActionResult> Edit(UserViewModel model)
         {
-            // Update view lists.
+            // Load view lists.
             model.Roles = model.Roles ?? new List<string>();
             model.SelectableRoles = _roleRepository.GetAll().Where(r => r.Text != "Admin").ToList() ?? new List<SelectListItem>();
+            model.SelectableCompanies = _companyHelper.GetAll() ?? new List<SelectListItem>();
 
             if (!ModelState.IsValid)
             {
@@ -171,7 +188,13 @@ namespace AppCalisto.Controllers
             }
 
             user.Roles = (await _userRepository.GetRolesAsync(user)).ToList(); // Load user roles.
-            if (user.Name == model.Name && user.Email == model.Email && user.Roles.OrderBy(r => r).SequenceEqual(model.Roles.OrderBy(r => r)))
+            if (model.Roles.Contains("Front-office") && (model.Companies == null || !model.Companies.Any()))
+            {
+                ViewBag.Failure = "At least one company must be selected for front-office users!";
+                return View(model);
+            }
+
+            if (user.Name == model.Name && user.Email == model.Email && user.Roles.OrderBy(r => r).SequenceEqual(model.Roles.OrderBy(r => r)) && user.Companies == string.Join(", ", model.Companies))
             {
                 ViewBag.Failure = "No changes were found.";
                 return View(model);
@@ -184,15 +207,15 @@ namespace AppCalisto.Controllers
                 return View(model);
             }
 
+            if (model.Roles.Contains("Front-office") && (model.Companies == null || !model.Companies.Any()))
+            {
+                ViewBag.Failure = "At least one company must be selected for front-office users!";
+                return View(model);
+            }
+
             user.Name = model.Name;
             user.Email = model.Email;
             user.UserName = model.Email;
-
-            if (await _userRepository.UpdateAsync(user) != IdentityResult.Success)
-            {
-                ViewBag.Failure = "Could not update user.";
-                return View(model);
-            }
 
             // Get user roles not included in the model.
             var removedRoles = (user.Roles ?? new List<string>())
@@ -208,6 +231,14 @@ namespace AppCalisto.Controllers
 
             await _userRepository.RemoveFromRolesAsync(user, removedRoles);
             await _userRepository.AddToRolesAsync(user, addedRoles);
+
+            user.Companies = model.Roles.Contains("Front-office") ? string.Join(", ", model.Companies) : "";
+
+            if (await _userRepository.UpdateAsync(user) != IdentityResult.Success)
+            {
+                ViewBag.Failure = "Could not update user.";
+                return View(model);
+            }
 
             ViewBag.Success = "User updated successfully.";
             return View(model);

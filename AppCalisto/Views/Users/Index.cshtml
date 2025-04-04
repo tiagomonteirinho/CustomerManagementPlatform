@@ -20,6 +20,7 @@
                     <thead>
                         <tr>
                             <th>Roles</th>
+                            <th>Companies</th>
                             <th>Name</th>
                             <th>Email</th>
                             <th>Email confirmed</th>
@@ -32,6 +33,7 @@
                         {
                             <tr>
                                 <td>@string.Join(", ", item.Roles ?? new List<string>())</td>
+                                <td>@item.Companies</td>
                                 <td>@item.Name</td>
                                 <td>@item.Email</td>
                                 <td>
