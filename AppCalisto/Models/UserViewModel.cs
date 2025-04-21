@@ -23,11 +23,6 @@ namespace AppCalisto.Models
 
         public IEnumerable<SelectListItem> SelectableRoles { get; set; }
 
-        [Required(ErrorMessage = "At least one company must be selected.")]
-        public List<string> Companies { get; set; } = new List<string>();
-
-        public IEnumerable<SelectListItem> SelectableCompanies { get; set; }
-
         public DateTimeOffset? LockoutEnd { get; set; }
     }
 }

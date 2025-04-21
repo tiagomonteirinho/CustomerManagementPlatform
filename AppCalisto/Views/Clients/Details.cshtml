@@ -7,14 +7,13 @@
 
 <h2>@Model.Name</h2>
 <hr />
+
 <div>
     <dl class="row">
         <dt class="col-sm-2">Id</dt>
         <dd class="col-sm-10">@Model.Id</dd>
         <dt class="col-sm-2">Name</dt>
         <dd class="col-sm-10">@Model.Name</dd>
-        <dt class="col-sm-2">Companies</dt>
-        <dd class="col-sm-10">@(!string.IsNullOrEmpty(Model.Companies) ? Model.Companies : "")</dd>
         <dt class="col-sm-2">Contact person</dt>
         <dd class="col-sm-10">@Model.ContactPerson</dd>
         <dt class="col-sm-2">Email</dt>
@@ -26,13 +25,13 @@
     </dl>
 </div>
 <div class="form-group">
-    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Edit</a>
+    <a asp-action="Edit" asp-route-Id="@Model.Id" class="btn btn-primary">Edit</a>
     <a asp-action="Index" class="btn btn-secondary">Back to list</a>
 </div>
 
 <div class="form-group">
     <h3>Orders</h3>
-    <a asp-controller="Orders" asp-action="Create" asp-route-clientId="@Model.Id" class="btn btn-primary">Create new order</a>
+    <a asp-controller="Orders" asp-action="Create" asp-route-ClientId="@Model.Id" class="btn btn-primary">Create new order</a>
 </div>
 @if (Model.Orders == null || Model.Orders.Count == 0)
 {
@@ -44,41 +43,45 @@ else
         <div class="col-md-12">
             <div class="card">
                 <div class="card-body">
-                    <table class="table table-hover table-responsive" id="MyTable">
+                    <table class="table table-hover table-responsive-lg" id="MyTable">
                         <thead>
                             <tr>
                                 <th>Id</th>
                                 <th>Number</th>
                                 <th>Company</th>
+                                <th>Service</th>
                                 <th>Urgent</th>
                                 <th>Appointment</th>
-                                <th>Type</th>
                                 <th>Location</th>
                                 <th>Status</th>
                                 <th></th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var item in Model.Orders.OrderBy(m => m.Id))
+                            @foreach (var item in Model.Orders.OrderBy(i => i.Id))
                             {
                                 <tr>
                                     <td>@item.Id</td>
                                     <td>@item.Number</td>
-                                    <td>@item.Company</td>
+                                    <td>
+                                        <a asp-controller="Companies" asp-action="Details" asp-route-Id="@item.Service.CompanyId">@item.Service.Company.Abbreviation (ID @item.Service.CompanyId)</a>
+                                    </td>
+                                    <td>
+                                        <a asp-controller="Services" asp-action="Details" asp-route-Id="@item.Service.Id">@item.Service.Abbreviation (ID @item.Service.Id)</a>
+                                    </td>
                                     <td>
                                         @(item.IsUrgent ? "Yes" : "No")
                                     </td>
                                     <td>
-                                        @if (item.Appointment >= item.Creation)
+                                        @if (item.Appointment > item.Creation)
                                         {
                                             @item.Appointment
                                         }
                                     </td>
-                                    <td>@item.Type</td>
                                     <td>@item.Location</td>
                                     <td>@item.Status</td>
                                     <td>
-                                        <a asp-controller="Orders" asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">Details</a>
+                                        <a asp-controller="Orders" asp-action="Details" asp-route-Id="@item.Id" class="btn btn-sm btn-info">Details</a>
                                     </td>
                                 </tr>
                             }

@@ -1,13 +1,10 @@
 ﻿using AppCalisto.Data.Entities;
 using AppCalisto.Data.Repositories;
-using AppCalisto.Helpers;
 using AppCalisto.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace AppCalisto.Controllers
 {
@@ -15,12 +12,10 @@ namespace AppCalisto.Controllers
     public class ClientsController : Controller
     {
         private readonly IClientRepository _clientRepository;
-        private readonly ICompanyHelper _companyHelper;
 
-        public ClientsController(IClientRepository clientRepository, ICompanyHelper companyHelper)
+        public ClientsController(IClientRepository clientRepository)
         {
             _clientRepository = clientRepository;
-            _companyHelper = companyHelper;
         }
 
         public async Task<IActionResult> Index()
@@ -30,20 +25,16 @@ namespace AppCalisto.Controllers
 
         public IActionResult Create()
         {
-            return View(new ClientViewModel 
-            {
-                SelectableCompanies = _companyHelper.GetAll() ?? new List<SelectListItem>()
-            });
+            return View(new ClientViewModel());
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(ClientViewModel model)
         {
-            model.SelectableCompanies = _companyHelper.GetAll() ?? new List<SelectListItem>();
-
             if (!ModelState.IsValid)
             {
-                ViewBag.Failure = "Could not create client.";
+                TempData["Failure"] = "Could not create client.";
                 return View();
             }
 
@@ -52,7 +43,7 @@ namespace AppCalisto.Controllers
                 var existingClientByEmail = await _clientRepository.GetByEmailAsync(model.Email);
                 if (existingClientByEmail != null)
                 {
-                    ViewBag.Failure = "That email is already being used.";
+                    TempData["Failure"] = "That email is already being used.";
                     return View(model);
                 }
             }
@@ -62,15 +53,9 @@ namespace AppCalisto.Controllers
                 var existingClientByTax = await _clientRepository.GetByTaxAsync(model.Tax);
                 if (existingClientByTax != null)
                 {
-                    ViewBag.Failure = "That tax ID is already being used.";
+                    TempData["Failure"] = "That tax ID is already being used.";
                     return View(model);
                 }
-            }
-
-            if (model.Companies == null || !model.Companies.Any())
-            {
-                ViewBag.Failure = "At least one company must be selected!";
-                return View(model);
             }
 
             var client = new Client()
@@ -79,22 +64,19 @@ namespace AppCalisto.Controllers
                 ContactPerson = model.ContactPerson,
                 Email = model.Email,
                 Phone = model.Phone,
-                Tax = model.Tax,
-                Companies = string.Join(", ", model.Companies ?? new List<string>())
+                Tax = model.Tax
             };
 
             await _clientRepository.CreateAsync(client);
-            if (!await _clientRepository.ExistsAsync(client.Id))
+            var createdClient = await _clientRepository.GetByIdAsync(client.Id);
+            if (client == null)
             {
-                ViewBag.Failure = "Could not create client.";
+                TempData["Failure"] = "Could not create client.";
                 return View(model);
             }
 
-            ViewBag.Success = "Client created successfully!";
-            return View(new ClientViewModel
-            {
-                SelectableCompanies = _companyHelper.GetAll() ?? new List<SelectListItem>()
-            });
+            TempData["Success"] = "Client created successfully!";
+            return View(new ClientViewModel());
         }
 
         public async Task<IActionResult> Details(int? id)
@@ -115,35 +97,35 @@ namespace AppCalisto.Controllers
 
         public async Task<IActionResult> Edit(int? id)
         {
+            if (id == null)
+            {
+                return RedirectToAction("NotFound404", "Errors", new { entityName = "Client" });
+            }
+
             var client = await _clientRepository.GetByIdAsync(id.Value);
             if (client == null)
             {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "Client" });
             }
 
-            var model = new ClientViewModel
+            return View(new ClientViewModel
             {
                 Id = client.Id,
                 Name = client.Name,
                 ContactPerson = client.ContactPerson,
                 Email = client.Email,
                 Phone = client.Phone,
-                Tax = client.Tax,
-                Companies = string.IsNullOrEmpty(client.Companies) ? new List<string>() : client.Companies.Split(", ").ToList(),
-                SelectableCompanies = _companyHelper.GetAll() ?? new List<SelectListItem>()
-            };
-
-            return View(model);
+                Tax = client.Tax
+            });
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(ClientViewModel model)
         {
-            model.SelectableCompanies = _companyHelper.GetAll() ?? new List<SelectListItem>();
-
             if (!ModelState.IsValid)
             {
-                ViewBag.Failure = "Could not update client.";
+                TempData["Failure"] = "Could not update client.";
                 return View(model);
             }
 
@@ -153,9 +135,9 @@ namespace AppCalisto.Controllers
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "Client" });
             }
 
-            if (client.Name == model.Name && client.ContactPerson == model.ContactPerson && client.Email == model.Email && client.Phone == model.Phone && client.Tax == model.Tax && client.Companies == string.Join(", ", model.Companies))
+            if (client.Name == model.Name && client.ContactPerson == model.ContactPerson && client.Email == model.Email && client.Phone == model.Phone && client.Tax == model.Tax)
             {
-                ViewBag.Failure = "No changes were found.";
+                TempData["Failure"] = "No changes were found.";
                 return View(model);
             }
 
@@ -164,7 +146,7 @@ namespace AppCalisto.Controllers
                 var existingClientByEmail = await _clientRepository.GetByEmailAsync(model.Email);
                 if (existingClientByEmail != null)
                 {
-                    ViewBag.Failure = "That email is already being used.";
+                    TempData["Failure"] = "That email is already being used.";
                     return View(model);
                 }
             }
@@ -174,15 +156,9 @@ namespace AppCalisto.Controllers
                 var existingClientByTax = await _clientRepository.GetByTaxAsync(model.Tax);
                 if (existingClientByTax != null)
                 {
-                    ViewBag.Failure = "That tax ID is already being used.";
+                    TempData["Failure"] = "That tax ID is already being used.";
                     return View(model);
                 }
-            }
-
-            if (model.Companies == null || !model.Companies.Any())
-            {
-                ViewBag.Failure = "At least one company must be selected!";
-                return View(model);
             }
 
             client.Name = model.Name;
@@ -190,19 +166,19 @@ namespace AppCalisto.Controllers
             client.Email = model.Email;
             client.Phone = model.Phone;
             client.Tax = model.Tax;
-            client.Companies = model.Companies != null ? string.Join(", ", model.Companies) : "";
 
             if (!await _clientRepository.UpdateAsync(client))
             {
-                ViewBag.Failure = "Could not update client. This may be due to database constraints or the entity no longer existing.";
+                TempData["Failure"] = "Could not update client. This may be due to database constraints or the entity no longer existing.";
                 return View(model);
             }
 
-            ViewBag.Success = "Client updated successfully.";
+            TempData["Success"] = "Client updated successfully.";
             return View(model);
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
             var client = await _clientRepository.GetByIdAsync(id);
@@ -213,22 +189,12 @@ namespace AppCalisto.Controllers
 
             if (!await _clientRepository.DeleteAsync(client))
             {
-                ViewBag.Failure = "Could not delete client. This may be due to database constraints or the entity no longer existing.";
-                return View("Edit", new ClientViewModel
-                {
-                    Id = client.Id,
-                    Name = client.Name,
-                    ContactPerson = client.ContactPerson,
-                    Email = client.Email,
-                    Phone = client.Phone,
-                    Tax = client.Tax,
-                    Companies = string.IsNullOrEmpty(client.Companies) ? new List<string>() : client.Companies.Split(", ").ToList(),
-                    SelectableCompanies = _companyHelper.GetAll() ?? new List<SelectListItem>()
-                });
+                TempData["Failure"] = "Could not delete client. This may be due to database constraints or the entity no longer existing.";
+                return RedirectToAction("Edit", new { id = client.Id });
             }
 
-            ViewBag.Success = "Client deleted successfully.";
-            return RedirectToAction($"Index");
+            TempData["Success"] = "Client deleted successfully.";
+            return RedirectToAction("Index");
         }
     }
 }

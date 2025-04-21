@@ -7,6 +7,18 @@
 
 <h2>All orders</h2>
 <br />
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["Success"]
+    </div>
+}
+@if (TempData["Failure"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["Failure"]
+    </div>
+}
 
 <a asp-controller="Clients" asp-action="Index" class="btn btn-primary">Create new order</a>
 <br />
@@ -23,9 +35,10 @@
                             <th>Number</th>
                             <th>Client</th>
                             <th>Company</th>
+                            <th>Service</th>
+                            <th>Created</th>
                             <th>Urgent</th>
                             <th>Appointment</th>
-                            <th>Type</th>
                             <th>Location</th>
                             <th>Status</th>
                             <th></th>
@@ -38,23 +51,28 @@
                                 <td>@item.Id</td>
                                 <td>@item.Number</td>
                                 <td>
-                                    <a asp-controller="Clients" asp-action="Details" asp-route-id="@item.Client.Id">@item.Client.Name (ID @item.Client.Id)</a>
+                                    <a asp-controller="Clients" asp-action="Details" asp-route-Id="@item.Client.Id">@item.Client.Name (ID @item.Client.Id)</a>
                                 </td>
-                                <td>@item.Company</td>
+                                <td>
+                                    <a asp-controller="Companies" asp-action="Details" asp-route-Id="@item.Service.CompanyId">@item.Service.Company.Abbreviation (ID @item.Service.CompanyId)</a>
+                                </td>
+                                <td>
+                                    <a asp-controller="Services" asp-action="Details" asp-route-Id="@item.Service.Id">@item.Service.Abbreviation (ID @item.Service.Id)</a>
+                                </td>
+                                <td>@item.Creation</td>
                                 <td>
                                     @(item.IsUrgent ? "Yes" : "No")
                                 </td>
                                 <td>
-                                    @if (item.Appointment >= item.Creation)
+                                    @if (item.Appointment > item.Creation)
                                     {
                                         @item.Appointment
                                     }
                                 </td>
-                                <td>@item.Type</td>
                                 <td>@item.Location</td>
                                 <td>@item.Status</td>
                                 <td>
-                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">Details</a>
+                                    <a asp-action="Details" asp-route-Id="@item.Id" class="btn btn-sm btn-info">Details</a>
                                 </td>
                             </tr>
                         }

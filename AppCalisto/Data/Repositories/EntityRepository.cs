@@ -1,12 +1,10 @@
-﻿using AppCalisto.Data.Entities;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace AppCalisto.Data.Repositories
 {
-    public class EntityRepository<T> : IEntityRepository<T> where T : class, IEntity
+    public class EntityRepository<T> : IEntityRepository<T> where T : class
     {
         private readonly DataContext _context;
 
@@ -15,16 +13,9 @@ namespace AppCalisto.Data.Repositories
             _context = context;
         }
 
-        public async Task<List<T>> GetAllAsync()
+        public async Task<bool> SaveAllAsync()
         {
-            return await _context.Set<T>().AsNoTracking().ToListAsync();
-        }
-
-        public async Task<T> GetByIdAsync(int id)
-        {
-            return await _context.Set<T>()
-                .AsNoTracking()
-                .FirstOrDefaultAsync(e => e.Id == id);
+            return await _context.SaveChangesAsync() > 0;
         }
 
         public async Task CreateAsync(T entity)
@@ -65,16 +56,6 @@ namespace AppCalisto.Data.Repositories
             {
                 return false;
             }
-        }
-
-        public async Task<bool> ExistsAsync(int id)
-        {
-            return await _context.Set<T>().AnyAsync(e => e.Id == id);
-        }
-
-        public async Task<bool> SaveAllAsync()
-        {
-            return await _context.SaveChangesAsync() > 0;
         }
     }
 }

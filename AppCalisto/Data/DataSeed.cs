@@ -28,6 +28,8 @@ namespace AppCalisto.Data
             await CreateRoles();
             await CreateUsers();
             await CreateClients();
+            await CreateCompanies();
+            await CreateServices();
             await CreateOrders();
         }
 
@@ -61,7 +63,7 @@ namespace AppCalisto.Data
                     {
                         if (!await _roleRepository.ExistsAsync(role))
                         {
-                            throw new InvalidOperationException($"Could not add seed user to role.");
+                            throw new InvalidOperationException($"Could not find seed role.");
                         }
                     }
 
@@ -86,7 +88,7 @@ namespace AppCalisto.Data
                         {
                             if (!await _userRepository.IsInRoleAsync(user, role))
                             {
-                                throw new InvalidOperationException($"Could not add seed user to role.");
+                                throw new InvalidOperationException($"Seed user {user.Id} not related to seed role {role}.");
                             }
                         }
 
@@ -105,11 +107,55 @@ namespace AppCalisto.Data
             {
                 var seedClients = new List<Client>
                 {
-                    new Client { Name = "Client 1", ContactPerson = "Person 1", Email = "client@mail", Phone = "111111111", Tax = "111111111", Companies = "PT Informática, Global Eletrik" },
-                    new Client { Name = "Client 2", ContactPerson = "Person 2", Email = "client2@mail", Phone = "222222222", Tax = "222222222", Companies = "Eficaz" }
+                    new Client { Name = "Client 1", ContactPerson = "Person 1", Email = "client@mail", Phone = "111111111", Tax = "111111111" },
+                    new Client { Name = "Client 2", ContactPerson = "Person 2", Email = "client2@mail", Phone = "222222222", Tax = "222222222" }
                 };
 
                 _context.Clients.AddRange(seedClients.AsEnumerable().Reverse());
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        public async Task CreateCompanies()
+        {
+            if (!await _context.Companies.AnyAsync())
+            {
+                var seedCompanies = new List<Company>
+                {
+                    new Company { Name = "Singela Vertente Unipessoal, Lda", Abbreviation = "SINGV" },
+                    new Company { Name = "Company 2", Abbreviation = "COMP2" }
+                };
+
+                _context.Companies.AddRange(seedCompanies.AsEnumerable().Reverse());
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        public async Task CreateServices()
+        {
+            if (!await _context.Services.AnyAsync())
+            {
+                var seedServices = new List<Service>
+                {
+                    new Service { Name = "PT Informática", Abbreviation = "PTINF", CompanyId = 1 },
+                    new Service { Name = "Global Eletrik", Abbreviation = "ELETR", CompanyId = 1 },
+                    new Service { Name = "Eficaz", Abbreviation = "EFICZ", CompanyId = 1 },
+                    new Service { Name = "Singela Vertente Unipessoal, Lda", Abbreviation = "SINGV", CompanyId = 1 },
+                    new Service { Name = "Company 2", Abbreviation = "COMP2", CompanyId = 2 },
+                };
+
+                foreach (var service in seedServices)
+                {
+                    var company = await _context.Companies.FirstOrDefaultAsync(c => c.Id == service.CompanyId);
+                    if (company == null)
+                    {
+                        throw new InvalidOperationException($"Could not find seed company.");
+                    }
+
+                    service.Company = company;
+                }
+
+                _context.Services.AddRange(seedServices.AsEnumerable().Reverse());
                 await _context.SaveChangesAsync();
             }
         }
@@ -120,9 +166,12 @@ namespace AppCalisto.Data
             {
                 var seedOrders = new List<Order>
                 {
-                    new Order { Number = "Order 1", Type = "Software Development", Location = "Client 1's Office", Description = "Application development.", Status = "Ongoing", ClientId = 1, Company = "PT Informática" },
-                    new Order { Number = "Order 2", Type = "Server Maintenance", Location = "Client 1's Office", Description = "Eletric stove repairing.", Status = "Ongoing", ClientId = 1, Company = "Global Eletrik" },
-                    new Order { Number = "Order 3", Type = "Device Repairing", Location = "Client 2's Office", Description = "Server systems maintenance.", Status = "Ongoing", ClientId = 2, Company = "Eficaz" }
+                    new Order { Location = "Client 1's Office", Description = "Application development.", Status = "Ongoing", 
+                        ClientId = 1, ServiceId = 1 },
+                    new Order { Location = "Client 1's Office", Description = "Eletric stove repairing.", Status = "Ongoing",
+                        ClientId = 1, ServiceId = 2 },
+                    new Order { Location = "Client 2's Office", Description = "Server systems maintenance.", Status = "Ongoing",
+                        ClientId = 2, ServiceId = 5 },
                 };
 
                 foreach (var order in seedOrders)
@@ -130,10 +179,14 @@ namespace AppCalisto.Data
                     var client = await _context.Clients.FirstOrDefaultAsync(c => c.Id == order.ClientId);
                     if (client == null)
                     {
-                        throw new InvalidOperationException($"Could not add seed order to client.");
+                        throw new InvalidOperationException($"Could not find seed client.");
                     }
 
-                    order.Client = client;
+                    var service = await _context.Services.FirstOrDefaultAsync(s => s.Id == order.ServiceId);
+                    if (service == null)
+                    {
+                        throw new InvalidOperationException($"Could not find seed service."); 
+                    }
                 }
 
                 _context.Orders.AddRange(seedOrders.AsEnumerable().Reverse());

@@ -13,7 +13,5 @@ namespace AppCalisto.Data.Entities
 
         [NotMapped]
         public IEnumerable<string> Roles { get; set; }
-
-        public string Companies { get; set; }
     }
 }

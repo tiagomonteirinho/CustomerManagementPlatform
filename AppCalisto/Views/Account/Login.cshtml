@@ -4,11 +4,10 @@
 }
 
 <h2 class="text-center">Login</h2>
-
-@if (ViewBag.Failure != null)
+@if (TempData["Failure"] != null)
 {
     <div class="alert alert-danger">
-        @ViewBag.Failure
+        @TempData["Failure"]
     </div>
 }
 

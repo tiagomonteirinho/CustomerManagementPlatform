@@ -7,6 +7,18 @@
 
 <h2>All clients</h2>
 <br />
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["Success"]
+    </div>
+}
+@if (TempData["Failure"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["Failure"]
+    </div>
+}
 
 <a asp-action="Create" class="btn btn-primary">Create new client</a>
 <br />
@@ -21,7 +33,6 @@
                         <tr>
                             <th>Id</th>
                             <th>Name</th>
-                            <th>Companies</th>
                             <th>Contact person</th>
                             <th>Email</th>
                             <th>Phone</th>
@@ -35,14 +46,13 @@
                             <tr>
                                 <td>@item.Id</td>
                                 <td>@item.Name</td>
-                                <td>@item.Companies</td>
                                 <td>@item.ContactPerson</td>
                                 <td>@item.Email</td>
                                 <td>@item.Phone</td>
                                 <td>@item.Tax</td>
                                 <td>
-                                    <a asp-controller="Orders" asp-action="Create" asp-route-clientId="@item.Id" class="btn btn-sm btn-primary">Add order</a>
-                                    <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">Details</a>
+                                    <a asp-controller="Orders" asp-action="Create" asp-route-ClientId="@item.Id" class="btn btn-sm btn-primary">Add order</a>
+                                    <a asp-action="Details" asp-route-Id="@item.Id" class="btn btn-sm btn-info">Details</a>
                                 </td>
                             </tr>
                         }

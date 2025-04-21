@@ -18,14 +18,12 @@ namespace AppCalisto.Controllers
     {
         private readonly IUserRepository _userRepository;
         private readonly IRoleRepository _roleRepository;
-        private readonly ICompanyHelper _companyHelper;
         private readonly IMailHelper _mailHelper;
 
-        public UsersController(IUserRepository userRepository, IRoleRepository roleRepository, ICompanyHelper companyHelper, IMailHelper mailHelper)
+        public UsersController(IUserRepository userRepository, IRoleRepository roleRepository, IMailHelper mailHelper)
         {
             _userRepository = userRepository;
             _roleRepository = roleRepository;
-            _companyHelper = companyHelper;
             _mailHelper = mailHelper;
         }
 
@@ -44,34 +42,27 @@ namespace AppCalisto.Controllers
         {
             return View(new UserViewModel
             {
-                SelectableRoles = _roleRepository.GetAll() ?? new List<SelectListItem>(),
-                SelectableCompanies = _companyHelper.GetAll() ?? new List<SelectListItem>()
+                SelectableRoles = _roleRepository.GetAll() ?? new List<SelectListItem>()
             });
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(UserViewModel model)
         { 
             // Load view lists.
             model.SelectableRoles = _roleRepository.GetAll() ?? new List<SelectListItem>();
-            model.SelectableCompanies = _companyHelper.GetAll() ?? new List<SelectListItem>();
 
             if (!ModelState.IsValid)
             {
-                ViewBag.Failure = "Could not create user.";
+                TempData["Failure"] = "Could not create user.";
                 return View(model);
             }
 
             var existingUserByEmail = await _userRepository.GetByEmailAsync(model.Email);
             if (existingUserByEmail != null)
             {
-                ViewBag.Failure = "That email is already being used.";
-                return View(model);
-            }
-
-            if (model.Roles.Contains("Front-office") && (model.Companies == null || !model.Companies.Any()))
-            {
-                ViewBag.Failure = "At least one company must be selected for front-office users!";
+                TempData["Failure"] = "That email is already being used.";
                 return View(model);
             }
 
@@ -80,12 +71,11 @@ namespace AppCalisto.Controllers
                 Name = model.Name,
                 Email = model.Email,
                 UserName = model.Email,
-                Companies = model.Roles.Contains("Front-office") ? string.Join(", ", model.Companies) : ""
             };
 
             if (await _userRepository.CreateAsync(user, null) != IdentityResult.Success)
             {
-                ViewBag.Failure = "Could not create user.";
+                TempData["Failure"] = "Could not create user.";
                 return View(model);
             }
 
@@ -94,7 +84,7 @@ namespace AppCalisto.Controllers
             {
                 if (!await _userRepository.IsInRoleAsync(user, role))
                 {
-                    ViewBag.Failure = "Could not create user.";
+                    TempData["Failure"] = "Could not create user.";
                     return View(model);
                 }
             }
@@ -113,23 +103,22 @@ namespace AppCalisto.Controllers
                 + $"To confirm your email, please set your password <a href=\"{actionUrl}\" style=\"color: blue;\">here</a>.");
             if (!emailSent)
             {
-                ViewBag.Failure = "Could not send account confirmation email.";
+                TempData["Failure"] = "Could not send account confirmation email.";
                 return View(model);
             }
 
-            ViewBag.Success = "User created successfully!";
+            TempData["Success"] = "User created successfully!";
             ModelState.Clear(); // Clear view form.
             return View(new UserViewModel
             { 
                 // Update view lists.
-                SelectableRoles = _roleRepository.GetAll() ?? new List<SelectListItem>(),
-                SelectableCompanies = _companyHelper.GetAll() ?? new List<SelectListItem>()
+                SelectableRoles = _roleRepository.GetAll() ?? new List<SelectListItem>()
             });
         }
 
         public async Task<IActionResult> Details(string id)
         {
-            if (id == null)
+            if (string.IsNullOrEmpty(id))
             {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
             }
@@ -146,6 +135,11 @@ namespace AppCalisto.Controllers
 
         public async Task<IActionResult> Edit(string id)
         {
+            if (string.IsNullOrEmpty(id))
+            {
+                return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
+            }
+
             var user = await _userRepository.GetByIdAsync(id);
             if (user == null)
             {
@@ -159,8 +153,6 @@ namespace AppCalisto.Controllers
                 Email = user.Email,
                 Roles = (await _userRepository.GetRolesAsync(user)).ToList() ?? new List<string>(),
                 SelectableRoles = _roleRepository.GetAll().Where(r => r.Text != "Admin").ToList() ?? new List<SelectListItem>(),
-                Companies = string.IsNullOrEmpty(user.Companies) ? new List<string>() : user.Companies.Split(", ").ToList(),
-                SelectableCompanies = _companyHelper.GetAll() ?? new List<SelectListItem>(),
                 LockoutEnd = user.LockoutEnd
             };
 
@@ -168,16 +160,16 @@ namespace AppCalisto.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(UserViewModel model)
         {
             // Load view lists.
             model.Roles = model.Roles ?? new List<string>();
             model.SelectableRoles = _roleRepository.GetAll().Where(r => r.Text != "Admin").ToList() ?? new List<SelectListItem>();
-            model.SelectableCompanies = _companyHelper.GetAll() ?? new List<SelectListItem>();
 
             if (!ModelState.IsValid)
             {
-                ViewBag.Failure = "Could not update user.";
+                TempData["Failure"] = "Could not update user.";
                 return View(model);
             }
 
@@ -187,29 +179,16 @@ namespace AppCalisto.Controllers
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
             }
 
-            user.Roles = (await _userRepository.GetRolesAsync(user)).ToList(); // Load user roles.
-            if (model.Roles.Contains("Front-office") && (model.Companies == null || !model.Companies.Any()))
+            if (user.Name == model.Name && user.Email == model.Email && user.Roles.OrderBy(r => r).SequenceEqual(model.Roles.OrderBy(r => r)))
             {
-                ViewBag.Failure = "At least one company must be selected for front-office users!";
-                return View(model);
-            }
-
-            if (user.Name == model.Name && user.Email == model.Email && user.Roles.OrderBy(r => r).SequenceEqual(model.Roles.OrderBy(r => r)) && user.Companies == string.Join(", ", model.Companies))
-            {
-                ViewBag.Failure = "No changes were found.";
+                TempData["Failure"] = "No changes were found.";
                 return View(model);
             }
 
             var existingUserByEmail = await _userRepository.GetByEmailAsync(model.Email);
             if (existingUserByEmail != null && existingUserByEmail != user)
             {
-                ViewBag.Failure = "That email is already being used.";
-                return View(model);
-            }
-
-            if (model.Roles.Contains("Front-office") && (model.Companies == null || !model.Companies.Any()))
-            {
-                ViewBag.Failure = "At least one company must be selected for front-office users!";
+                TempData["Failure"] = "That email is already being used.";
                 return View(model);
             }
 
@@ -232,22 +211,21 @@ namespace AppCalisto.Controllers
             await _userRepository.RemoveFromRolesAsync(user, removedRoles);
             await _userRepository.AddToRolesAsync(user, addedRoles);
 
-            user.Companies = model.Roles.Contains("Front-office") ? string.Join(", ", model.Companies) : "";
-
             if (await _userRepository.UpdateAsync(user) != IdentityResult.Success)
             {
-                ViewBag.Failure = "Could not update user.";
+                TempData["Failure"] = "Could not update user.";
                 return View(model);
             }
 
-            ViewBag.Success = "User updated successfully.";
+            TempData["Success"] = "User updated successfully.";
             return View(model);
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Deactivate(string id)
         {
-            if (id == null)
+            if (string.IsNullOrEmpty(id))
             {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
             }
@@ -262,7 +240,7 @@ namespace AppCalisto.Controllers
 
             if (await _userRepository.LockOutAsync(user) != IdentityResult.Success)
             {
-                ViewBag.Failure = "Could not deactivate user.";
+                TempData["Failure"] = "Could not deactivate user.";
             }
 
             var model = new UserViewModel
@@ -275,14 +253,15 @@ namespace AppCalisto.Controllers
                 LockoutEnd = user.LockoutEnd
             };
 
-            ViewBag.Success = "User deactivated successfully.";
-            return View("Edit", model);
+            TempData["Success"] = "User deactivated successfully.";
+            return RedirectToAction("Edit", new { id });
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Reactivate(string id)
         {
-            if (id == null)
+            if (string.IsNullOrEmpty(id))
             {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
             }
@@ -297,7 +276,7 @@ namespace AppCalisto.Controllers
 
             if (await _userRepository.UnlockAsync(user) != IdentityResult.Success)
             {
-                ViewBag.Failure = "Could not reactivate user.";
+                TempData["Failure"] = "Could not reactivate user.";
             }
 
             var model = new UserViewModel
@@ -310,8 +289,8 @@ namespace AppCalisto.Controllers
                 LockoutEnd = user.LockoutEnd
             };
 
-            ViewBag.Success = "User reactivated successfully.";
-            return View("Edit", model);
+            TempData["Success"] = "User reactivated successfully.";
+            return RedirectToAction("Edit", new { id });
         }
     }
 }

@@ -31,25 +31,26 @@ namespace AppCalisto.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
             if (!ModelState.IsValid)
             {
-                ViewBag.Failure = "Invalid login attempt.";
+                TempData["Failure"] = "Invalid login attempt.";
                 return View(model);
             }
 
             var user = await _userRepository.GetByEmailAsync(model.Email);
             if (user == null)
             {
-                ViewBag.Failure = "Could not find that email address.";
+                TempData["Failure"] = "Could not find that email address.";
                 return View(model);
             }
 
             var result = await _userRepository.LoginAsync(model);
             if (!result.Succeeded)
             {
-                ViewBag.Failure = "Could not log in.";
+                TempData["Failure"] = "Could not log in.";
                 return View(model);
             }
 
@@ -70,6 +71,7 @@ namespace AppCalisto.Controllers
 
         [Authorize]
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
         {
             if (!ModelState.IsValid)
@@ -86,11 +88,11 @@ namespace AppCalisto.Controllers
             var result = await _userRepository.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
             if (result.Succeeded)
             {
-                ViewBag.Success = "Password updated successfully!";
+                TempData["Success"] = "Password updated successfully!";
                 return View();
             }
 
-            ViewBag.Failure = result.Errors.FirstOrDefault().Description;
+            TempData["Failure"] = result.Errors.FirstOrDefault().Description;
             return View();
         }
 
@@ -105,6 +107,7 @@ namespace AppCalisto.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> SendPasswordResetEmail(SendPasswordSetEmailViewModel model)
         {
             if (!ModelState.IsValid)
@@ -115,7 +118,7 @@ namespace AppCalisto.Controllers
             var user = await _userRepository.GetByEmailAsync(model.Email);
             if (user == null)
             {
-                ViewBag.Failure = "Email address not found.";
+                TempData["Failure"] = "Email address not found.";
                 return View(model);
             }
 
@@ -134,11 +137,11 @@ namespace AppCalisto.Controllers
                     + $"To reset your password, please update it <a href=\"{actionUrl}\" style=\"color: blue;\">here</a>.");
                 if (!emailSent)
                 {
-                    ViewBag.Failure = "Could not send password reset email.";
+                    TempData["Failure"] = "Could not send password reset email.";
                     return View(model);
                 }
 
-                ViewBag.Success = "Instructions to reset your password have been sent to your email address.";
+                TempData["Success"] = "Instructions to reset your password have been sent to your email address.";
                 return View();
             }
             else
@@ -157,11 +160,11 @@ namespace AppCalisto.Controllers
                     + $"To confirm your email, please set your password <a href=\"{actionUrl}\" style=\"color: blue;\">here</a>.");
                 if (!emailSent)
                 {
-                    ViewBag.Failure = "Could not send email confirmation email.";
+                    TempData["Failure"] = "Could not send email confirmation email.";
                     return View(model);
                 }
 
-                ViewBag.Success = "This account has not been confirmed. Instructions to confirm it and set your password have been sent to your email address.";
+                TempData["Success"] = "This account has not been confirmed. Instructions to confirm it and set your password have been sent to your email address.";
                 return View();
             }
         }
@@ -182,6 +185,7 @@ namespace AppCalisto.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> SetPassword(SetPasswordViewModel model)
         {
             var user = await _userRepository.GetByIdAsync(model.Id);
@@ -201,11 +205,11 @@ namespace AppCalisto.Controllers
 
             if (await _userRepository.SetPasswordAsync(user, model.PasswordSetToken, model.NewPassword) != IdentityResult.Success)
             {
-                ViewBag.Failure = "Could not set password.";
+                TempData["Failure"] = "Could not set password.";
                 return View(model);
             }
 
-            ViewBag.Success = "Password updated successfully!";
+            TempData["Success"] = "Password updated successfully!";
             return View();
         }
     }

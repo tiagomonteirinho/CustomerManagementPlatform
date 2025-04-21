@@ -1,0 +1,16 @@
+﻿using AppCalisto.Data.Entities;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+namespace AppCalisto.Data.Repositories
+{
+    public interface IServiceRepository : IEntityRepository<Service>
+    {
+        Task<List<Service>> GetAllAsync();
+
+        Task<Service> GetByIdAsync(int id);
+
+        Task<Service> GetByAbbreviationAsync(string abbreviation);
+    }
+}

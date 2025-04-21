@@ -1,11 +1,11 @@
-﻿@model IEnumerable<AppCalisto.Data.Entities.User>
+﻿@model IEnumerable<AppCalisto.Data.Entities.Service>
 @{
     ViewData["Title"] = "Index";
 }
 
 <link rel="stylesheet" href="https://cdn.datatables.net/1.10.25/css/dataTables.bootstrap4.min.css" />
 
-<h2>All users</h2>
+<h2>All services</h2>
 <br />
 @if (TempData["Success"] != null)
 {
@@ -20,7 +20,7 @@
     </div>
 }
 
-<a asp-action="Create" class="btn btn-primary">Create new user</a>
+<a asp-controller="Companies" asp-action="Index" class="btn btn-primary">Create new service</a>
 <br />
 <br />
 
@@ -31,28 +31,22 @@
                 <table class="table table-hover table-responsive-lg" id="MyTable">
                     <thead>
                         <tr>
-                            <th>Roles</th>
+                            <th>Id</th>
+                            <th>Abbreviation</th>
                             <th>Name</th>
-                            <th>Email</th>
-                            <th>Email confirmed</th>
-                            <th>Active</th>
+                            <th>Company</th>
                             <th></th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var item in Model.OrderBy(i => i.Name))
+                        @foreach (var item in Model.OrderBy(i => i.Id))
                         {
                             <tr>
-                                <td>@string.Join(", ", item.Roles ?? new List<string>())</td>
+                                <td>@item.Id</td>
+                                <td>@item.Abbreviation</td>
                                 <td>@item.Name</td>
-                                <td>@item.Email</td>
                                 <td>
-                                    @(item.EmailConfirmed ? "Yes" : "No")
-                                </td>
-                                <td>
-                                    @((item.Roles ?? new List<string>()).Contains("Admin")
-                                        ? "Always"
-                                        : (item.LockoutEnd == null || item.LockoutEnd < DateTimeOffset.Now) ? "Yes" : "No")
+                                    <a asp-controller="Companies" asp-action="Details" asp-route-Id="@item.Company.Id">@item.Company.Name (ID @item.Company.Id)</a>
                                 </td>
                                 <td>
                                     <a asp-action="Details" asp-route-Id="@item.Id" class="btn btn-sm btn-info">Details</a>

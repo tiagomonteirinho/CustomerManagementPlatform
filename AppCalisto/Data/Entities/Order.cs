@@ -3,23 +3,19 @@ using System.ComponentModel.DataAnnotations;
 
 namespace AppCalisto.Data.Entities
 {
-    public class Order : IEntity
+    public class Order
     {
         public int Id { get; set; }
 
-        [Required]
-        public string Number { get; set; }
+        public string Number { get; set; } = Guid.NewGuid().ToString();
 
         public DateTime Creation { get; set; } = DateTime.Now;
 
-        public DateTime Execution { get; set; }
+        public DateTime Execution { get; set; } = DateTime.Now;
 
-        public DateTime Appointment { get; set; }
+        public DateTime Appointment { get; set; } = DateTime.Now;
 
         public bool IsUrgent { get; set; }
-
-        [Required]
-        public string Type { get; set; }
 
         public string Location { get; set; }
 
@@ -31,6 +27,9 @@ namespace AppCalisto.Data.Entities
 
         public int ClientId { get; set; }
 
-        public string Company { get; set; }
+        public Service Service { get; set; }
+
+        [Required]
+        public int ServiceId { get; set; }
     }
 }

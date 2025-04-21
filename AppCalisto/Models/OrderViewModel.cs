@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 
 namespace AppCalisto.Models
 {
@@ -10,17 +9,15 @@ namespace AppCalisto.Models
     {
         public int Id { get; set; }
 
-        [Required]
         public string Number { get; set; }
+
+        public DateTime Creation { get; set; }
 
         public DateTime Execution { get; set; }
 
         public DateTime Appointment { get; set; }
 
         public bool IsUrgent { get; set; }
-
-        [Required]
-        public string Type { get; set; }
 
         public string Location { get; set; }
         
@@ -32,9 +29,14 @@ namespace AppCalisto.Models
 
         public int ClientId { get; set; }
 
-        [Required(ErrorMessage = "A company must be selected!")]
-        public string Company { get; set; }
+        public int CompanyId { get; set; }
 
         public IEnumerable<SelectListItem> SelectableCompanies { get; set; }
+
+        public Service Service { get; set; }
+
+        public int ServiceId { get; set; }
+
+        public IEnumerable<SelectListItem> SelectableServices { get; set; }
     }
 }
