@@ -5,6 +5,7 @@ namespace AppCalisto.Data.Entities
 {
     public class Client
     {
+        [Required]
         public int Id { get; set; }
 
         [Required]

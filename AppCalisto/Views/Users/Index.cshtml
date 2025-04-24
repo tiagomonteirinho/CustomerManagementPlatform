@@ -50,9 +50,7 @@
                                     @(item.EmailConfirmed ? "Yes" : "No")
                                 </td>
                                 <td>
-                                    @((item.Roles ?? new List<string>()).Contains("Admin")
-                                        ? "Always"
-                                        : (item.LockoutEnd == null || item.LockoutEnd < DateTimeOffset.Now) ? "Yes" : "No")
+                                    @((item.LockoutEnd == null || item.LockoutEnd < DateTimeOffset.Now) ? "Yes" : "No")
                                 </td>
                                 <td>
                                     <a asp-action="Details" asp-route-Id="@item.Id" class="btn btn-sm btn-info">Details</a>

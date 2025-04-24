@@ -16,17 +16,17 @@ namespace AppCalisto.Data.Repositories
 
         public async Task<List<Order>> GetAllAsync()
         {
-            return await _context.Orders.AsNoTracking().Include(o => o.Client).Include(o => o.Service).ThenInclude(s => s.Company).ToListAsync();
+            return await _context.Orders.AsNoTracking().Include(o => o.Client).Include(o => o.Service).ThenInclude(s => s.Company).Include(o => o.Technician).ToListAsync();
         }
 
         public async Task<Order> GetByIdAsync(int id)
         {
-            return await _context.Orders.Include(o => o.Client).Include(o => o.Service).ThenInclude(s => s.Company).FirstOrDefaultAsync(o => o.Id == id);
+            return await _context.Orders.Include(o => o.Client).Include(o => o.Service).ThenInclude(s => s.Company).Include(o => o.Technician).FirstOrDefaultAsync(o => o.Id == id);
         }
 
         public async Task<Order> GetByNumberAsync(string number)
         {
-            return await _context.Orders.Include(o => o.Client).Include(o => o.Service).ThenInclude(s => s.Company).FirstOrDefaultAsync(o => o.Number == number);
+            return await _context.Orders.Include(o => o.Client).Include(o => o.Service).ThenInclude(s => s.Company).Include(o => o.Technician).FirstOrDefaultAsync(o => o.Number == number);
         }
     }
 }

@@ -22,15 +22,28 @@
     <div class="col-md-4 offset-md-4">
         <form method="post">
             <div asp-validation-summary="ModelOnly"></div>
-
+            
             <div class="form-group">
                 <label>Roles</label>
                 @foreach (var role in Model.SelectableRoles ?? new List<SelectListItem>())
                 {
-                    <div class="form-check">
-                        <input type="checkbox" class="form-check-input" name="Roles" value="@role.Value" onchange="toggleCompanyList()" @(Model.Roles?.Contains(role.Value) ?? false ? "checked" : "") />
-                        <label class="form-check-label">@role.Text</label>
-                    </div>
+                    @if (User.Identity.Name == "admin@mail")
+                    {
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" name="Roles" value="@role.Value" @(Model.Roles?.Contains(role.Value) ?? false ? "checked" : "") />
+                            <label class="form-check-label">@role.Text</label>
+                        </div>
+                    }
+                    else
+                    {
+                        @if (role.Text != "Admin")
+                        {
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" name="Roles" value="@role.Value" @(Model.Roles?.Contains(role.Value) ?? false ? "checked" : "") />
+                                <label class="form-check-label">@role.Text</label>
+                            </div>
+                        }
+                    }
                 }
                 <span asp-validation-for="Roles" class="text-warning"></span>
             </div>
@@ -50,23 +63,21 @@
                 <a asp-action="Details" asp-route-Id="@Model.Id" class="btn btn-secondary">Back to details</a>
             </div>
         </form>
+
         <div class="form-group">
-            @if (!(Model.Roles ?? new List<string>()).Contains("Admin"))
+            @if (Model.LockoutEnd == null || Model.LockoutEnd < DateTimeOffset.Now)
             {
-                @if (Model.LockoutEnd == null || Model.LockoutEnd < DateTimeOffset.Now)
-                {
-                    <form method="post" asp-action="Deactivate">
-                        <input type="hidden" name="id" value="@Model.Id" />
-                        <input type="submit" value="Deactivate user" class="btn btn-danger" onclick="return confirm('Are you sure you want to deactivate this user?');" />
-                    </form>
-                }
-                else
-                {
-                    <form method="post" asp-action="Reactivate">
-                        <input type="hidden" name="id" value="@Model.Id" />
-                        <input type="submit" value="Reactivate user" class="btn btn-success" onclick="return confirm('Are you sure you want to reactivate this user?');" />
-                    </form>
-                }
+                <form method="post" asp-action="Deactivate">
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <input type="submit" value="Deactivate user" class="btn btn-danger" onclick="return confirm('Are you sure you want to deactivate this user?');" />
+                </form>
+            }
+            else
+            {
+                <form method="post" asp-action="Reactivate">
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <input type="submit" value="Reactivate user" class="btn btn-success" onclick="return confirm('Are you sure you want to reactivate this user?');" />
+                </form>
             }
         </div>
     </div>
@@ -76,20 +87,4 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
-
-    <script>
-        function toggleCompanyList() {
-            var frontOfficeChecked = document.querySelector('input[value="Front-office"]:checked');
-            var companySelectionDiv = document.getElementById("companySelection");
-
-            if (frontOfficeChecked) {
-                companySelectionDiv.style.display = "block";
-            } else {
-                companySelectionDiv.style.display = "none";
-            }
-        }
-
-        // Run once on page load in case Front-office is preselected
-        document.addEventListener("DOMContentLoaded", toggleCompanyList);
-    </script>
 }

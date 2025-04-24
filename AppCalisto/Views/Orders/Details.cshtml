@@ -3,7 +3,7 @@
     ViewData["Title"] = "Details";
 }
 
-<h2>@Model.Number</h2>
+<h2>Order @Model.Number</h2>
 <hr />
 
 <div>
@@ -14,15 +14,19 @@
         <dd class="col-sm-10">@Model.Number</dd>
         <dt class="col-sm-2">Client</dt>
         <dd class="col-sm-10">
-            <a asp-controller="Clients" asp-action="Details" asp-route-Id="@Model.Client.Id">@Model.Client.Name (ID @Model.Client.Id)</a>
+            <a asp-controller="Clients" asp-action="Details" asp-route-Id="@Model.ClientId">@Model.Client.Name (ID @Model.ClientId)</a>
         </dd>
         <dt class="col-sm-2">Company</dt>
         <dd class="col-sm-10">
             <a asp-controller="Companies" asp-action="Details" asp-route-Id="@Model.Service.CompanyId">@Model.Service.Company.Name (ID @Model.Service.CompanyId)</a>
         </dd>
-        <dt class="col-sm-2">Client</dt>
+        <dt class="col-sm-2">Service</dt>
         <dd class="col-sm-10">
-            <a asp-controller="Services" asp-action="Details" asp-route-Id="@Model.Service.Id">@Model.Service.Name (ID @Model.Service.Id)</a>
+            <a asp-controller="Services" asp-action="Details" asp-route-Id="@Model.ServiceId">@Model.Service.Name (ID @Model.ServiceId)</a>
+        </dd>
+        <dt class="col-sm-2">Technician</dt>
+        <dd class="col-sm-10">
+            <a asp-controller="Users" asp-action="Details" asp-route-Id="@Model.TechnicianId">@Model.Technician.Name</a>
         </dd>
         <dt class="col-sm-2">Creation</dt>
         <dd class="col-sm-10">@Model.Creation</dd>

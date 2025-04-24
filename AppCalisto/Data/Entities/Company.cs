@@ -5,8 +5,10 @@ namespace AppCalisto.Data.Entities
 {
     public class Company
     {
+        [Required]
         public int Id { get; set; }
 
+        [Required]
         public string Abbreviation { get; set; }
 
         [Required]

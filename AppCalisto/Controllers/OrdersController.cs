@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace AppCalisto.Controllers
@@ -17,25 +18,39 @@ namespace AppCalisto.Controllers
         private readonly IClientRepository _clientRepository;
         private readonly ICompanyRepository _companyRepository;
         private readonly IServiceRepository _serviceRepository;
+        private readonly IUserRepository _userRepository;
 
-        public OrdersController(IOrderRepository orderRepository, IClientRepository clientRepository, ICompanyRepository companyRepository, IServiceRepository serviceRepository)
+        public OrdersController(IOrderRepository orderRepository, IClientRepository clientRepository, ICompanyRepository companyRepository, IServiceRepository serviceRepository, IUserRepository userRepository)
         {
             _orderRepository = orderRepository;
             _clientRepository = clientRepository;
             _companyRepository = companyRepository;
             _serviceRepository = serviceRepository;
+            _userRepository = userRepository;
         }
 
-        [HttpGet]
         public IActionResult GetCompanyServices(int companyId)
         {
             var services = _companyRepository.GetServices(companyId);
             return Json(services);
         }
-
+        
         public async Task<IActionResult> Index()
         {
             return View(await _orderRepository.GetAllAsync());
+        }
+
+        private async Task<OrderViewModel> BuildCreateOrderViewModelAsync(int clientId)
+        {
+            return new OrderViewModel
+            {
+                ClientId = clientId,
+                Creation = DateTime.Now,
+                Appointment = DateTime.Now,
+                SelectableCompanies = _companyRepository.GetAll() ?? new List<SelectListItem>(),
+                SelectableServices = _companyRepository.GetServices(0) ?? new List<SelectListItem>(),
+                SelectableTechnicians = await _userRepository.GetAllByRoleAsync("Technician") ?? new List<SelectListItem>()
+            };
         }
 
         public async Task<IActionResult> Create(int? clientId)
@@ -51,14 +66,7 @@ namespace AppCalisto.Controllers
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "Client" });
             }
 
-            return View(new OrderViewModel
-            {
-                ClientId = clientId.Value,
-                Creation = DateTime.Now,
-                Appointment = DateTime.Now,
-                SelectableCompanies = _companyRepository.GetAll() ?? new List<SelectListItem>(),
-                SelectableServices = _companyRepository.GetServices(0) ?? new List<SelectListItem>()
-            });
+            return View(await BuildCreateOrderViewModelAsync(clientId.Value));
         }
 
         [HttpPost]
@@ -68,13 +76,7 @@ namespace AppCalisto.Controllers
             if (!ModelState.IsValid)
             {
                 TempData["Failure"] = "Could not create order.";
-                return View(new OrderViewModel
-                {
-                    ClientId = model.ClientId,
-                    Creation = DateTime.Now,
-                    Appointment = DateTime.Now,
-                    SelectableCompanies = _companyRepository.GetAll() ?? new List<SelectListItem>(),
-                });
+                return View(await BuildCreateOrderViewModelAsync(model.ClientId));
             }
 
             var order = new Order()
@@ -85,7 +87,8 @@ namespace AppCalisto.Controllers
                 Description = model.Description,
                 Status = model.Status,
                 ClientId = model.ClientId,
-                ServiceId = model.ServiceId
+                ServiceId = model.ServiceId,
+                TechnicianId = model.TechnicianId
             };
 
             await _orderRepository.CreateAsync(order);
@@ -93,23 +96,11 @@ namespace AppCalisto.Controllers
             if (order == null)
             {
                 TempData["Failure"] = "Could not create order.";
-                return View(new OrderViewModel
-                {
-                    ClientId = model.ClientId,
-                    Creation = DateTime.Now,
-                    Appointment = DateTime.Now,
-                    SelectableCompanies = _companyRepository.GetAll() ?? new List<SelectListItem>()
-                });
+                return View(await BuildCreateOrderViewModelAsync(model.ClientId));
             }
 
             TempData["Success"] = "Order created successfully!";
-            return View(new OrderViewModel
-            {
-                ClientId = model.ClientId,
-                Creation = DateTime.Now,
-                Appointment = DateTime.Now,
-                SelectableCompanies = _companyRepository.GetAll() ?? new List<SelectListItem>()
-            });
+            return RedirectToAction("Create", new { clientId = model.ClientId });
         }
 
         public async Task<IActionResult> Details(int? id)
@@ -128,6 +119,29 @@ namespace AppCalisto.Controllers
             return View(order);
         }
 
+        private async Task<OrderViewModel> BuildEditOrderViewModelAsync(Order order)
+        {
+            return new OrderViewModel
+            {
+                Id = order.Id,
+                Number = order.Number,
+                Creation = order.Creation,
+                Execution = order.Execution,
+                Appointment = order.Appointment,
+                IsUrgent = order.IsUrgent,
+                Location = order.Location,
+                Description = order.Description,
+                Status = order.Status,
+                ClientId = order.ClientId,
+                CompanyId = order.Service.CompanyId,
+                SelectableCompanies = _companyRepository.GetAll() ?? new List<SelectListItem>(),
+                ServiceId = order.ServiceId,
+                SelectableServices = _companyRepository.GetServices(order.Service.CompanyId) ?? new List<SelectListItem>(),
+                TechnicianId = order.TechnicianId,
+                SelectableTechnicians = await _userRepository.GetAllByRoleAsync("Technician") ?? new List<SelectListItem>()
+            };
+        }
+
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -141,66 +155,35 @@ namespace AppCalisto.Controllers
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "Order" });
             }
 
-            return View(new OrderViewModel
-            {
-                Id = order.Id,
-                Number = order.Number,
-                Creation = order.Creation,
-                Execution = order.Execution,
-                Appointment = order.Appointment,
-                IsUrgent = order.IsUrgent,
-                Location = order.Location,
-                Description = order.Description,
-                Status = order.Status,
-                Client = order.Client,
-                ClientId = order.ClientId,
-                CompanyId = order.Service.CompanyId,
-                SelectableCompanies = _companyRepository.GetAll() ?? new List<SelectListItem>(),
-                Service = order.Service,
-                ServiceId = order.ServiceId,
-                SelectableServices = _companyRepository.GetServices(order.Service.CompanyId) ?? new List<SelectListItem>()
-            });
+            return View(await BuildEditOrderViewModelAsync(order));
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(OrderViewModel model)
         {
-            if (!ModelState.IsValid)
-            {
-                TempData["Failure"] = "Could not update order.";
-                return View(new OrderViewModel
-                {
-                    Id = model.Id,
-                    Creation = model.Creation,
-                    Appointment = model.Appointment,
-                    Execution = model.Execution,
-                    SelectableCompanies = _companyRepository.GetAll() ?? new List<SelectListItem>()
-                });
-            }
-
             var order = await _orderRepository.GetByIdAsync(model.Id);
             if (order == null)
             {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "Order" });
             }
 
+            if (!ModelState.IsValid)
+            {
+                TempData["Failure"] = "Could not update order.";
+                return View(await BuildEditOrderViewModelAsync(order));
+            }
+
             if (order.Execution == model.Execution && order.Appointment == model.Appointment && order.IsUrgent == model.IsUrgent && order.Location == model.Location && order.Description == model.Description && order.Status == model.Status
-                && order.ServiceId == model.ServiceId)
+                && order.ServiceId == model.ServiceId && order.TechnicianId == model.TechnicianId)
             {
                 TempData["Failure"] = "No changes were found.";
-                return View(new OrderViewModel
-                {
-                    Id = model.Id,
-                    Creation = model.Creation,
-                    Appointment = model.Appointment,
-                    Execution = model.Execution,
-                    SelectableCompanies = _companyRepository.GetAll() ?? new List<SelectListItem>()
-                });
+                return View(await BuildEditOrderViewModelAsync(order));
             }
 
             order.ClientId = model.ClientId;
             order.ServiceId = model.ServiceId;
+            order.TechnicianId = model.TechnicianId;
             order.Execution = model.Execution;
             order.Appointment = model.Appointment;
             order.IsUrgent = model.IsUrgent;
@@ -210,26 +193,12 @@ namespace AppCalisto.Controllers
 
             if (!await _orderRepository.UpdateAsync(order))
             {
-                TempData["Failure"] = "Could not update order. This may be due to database constraints or the entity no longer existing.";
-                return View(new OrderViewModel
-                {
-                    Id = model.Id,
-                    Creation = model.Creation,
-                    Appointment = model.Appointment,
-                    Execution = model.Execution,
-                    SelectableCompanies = _companyRepository.GetAll() ?? new List<SelectListItem>()
-                });
+                TempData["Failure"] = "Could not update order. This may be due to the entity being used by other entities or no longer existing.";
+                return View(await BuildEditOrderViewModelAsync(order));
             };
 
             TempData["Success"] = "Order updated successfully.";
-            return View(new OrderViewModel
-            {
-                Id = model.Id,
-                Creation = model.Creation,
-                Appointment = model.Appointment,
-                Execution = model.Execution,
-                SelectableCompanies = _companyRepository.GetAll() ?? new List<SelectListItem>()
-            });
+            return RedirectToAction("Edit", new { id = order.Id });
         }
 
         [HttpPost]
@@ -244,8 +213,8 @@ namespace AppCalisto.Controllers
 
             if (!await _orderRepository.DeleteAsync(order))
             {
-                TempData["Failure"] = "Could not delete order. This may be due to database constraints or the entity no longer existing.";
-                return RedirectToAction("Edit", new { id = order.Id });
+                TempData["Failure"] = "Could not delete order. This may be due to the entity being used by other entities or no longer existing.";
+                return RedirectToAction("Edit", new { id });
             }
 
             TempData["Success"] = "Order deleted successfully.";

@@ -59,7 +59,7 @@ namespace AppCalisto.Controllers
             }
 
             TempData["Success"] = "Company created successfully!";
-            return View(new CompanyViewModel());
+            return RedirectToAction("Create");
         }
 
         public async Task<IActionResult> Details(int? id)
@@ -136,12 +136,12 @@ namespace AppCalisto.Controllers
 
             if (!await _companyRepository.UpdateAsync(company))
             {
-                TempData["Failure"] = "Could not update company. This may be due to database constraints or the entity no longer existing.";
+                TempData["Failure"] = "Could not update company. This may be due to the entity being used by other entities or no longer existing.";
                 return View(model);
             }
 
             TempData["Success"] = "Company updated successfully.";
-            return View(model);
+            return RedirectToAction("Edit");
         }
 
         [HttpPost]
@@ -156,7 +156,7 @@ namespace AppCalisto.Controllers
 
             if (!await _companyRepository.DeleteAsync(company))
             {
-                TempData["Failure"] = "Could not delete company. This may be due to database constraints or the entity no longer existing.";
+                TempData["Failure"] = "Could not delete company. This may be due to the entity being used by other entities or no longer existing.";
                 return RedirectToAction("Edit", new { id = company.Id });
             }
 

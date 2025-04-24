@@ -7,6 +7,7 @@ namespace AppCalisto.Models
     {
         public int Id { get; set; }
 
+        [Required]
         public string Abbreviation { get; set; }
 
         [Required]
@@ -15,6 +16,7 @@ namespace AppCalisto.Models
 
         public Company Company { get; set; }
 
+        [Required]
         public int CompanyId { get; set; }
     }
 }

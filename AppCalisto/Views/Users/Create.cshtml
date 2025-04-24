@@ -25,12 +25,25 @@
 
             <div class="form-group">
                 <label>Roles</label>
-                @foreach (var role in Model.SelectableRoles)
+                @foreach (var role in Model.SelectableRoles ?? new List<SelectListItem>())
                 {
-                    <div class="form-check">
-                        <input type="checkbox" class="form-check-input role-checkbox" id="role-@role.Value" name="Roles" value="@role.Value" onchange="toggleCompanyList()" />
-                        <label class="form-check-label">@role.Text</label>
-                    </div>
+                    @if (User.Identity.Name == "admin@mail")
+                    {
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" name="Roles" value="@role.Value" />
+                            <label class="form-check-label">@role.Text</label>
+                        </div>
+                    }
+                    else
+                    {
+                        @if (role.Text != "Admin")
+                        {
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" name="Roles" value="@role.Value" />
+                                <label class="form-check-label">@role.Text</label>
+                            </div>
+                        }
+                    }
                 }
                 <span asp-validation-for="Roles" class="text-warning"></span>
             </div>
@@ -57,20 +70,4 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
-
-    <script>
-        function toggleCompanyList() {
-            var frontOfficeChecked = document.querySelector('input[value="Front-office"]:checked');
-            var companySelectionDiv = document.getElementById("companySelection");
-
-            if (frontOfficeChecked) {
-                companySelectionDiv.style.display = "block";
-            } else {
-                companySelectionDiv.style.display = "none";
-            }
-        }
-
-        // Run once on page load in case Front-office is preselected
-        document.addEventListener("DOMContentLoaded", toggleCompanyList);
-    </script>
 }

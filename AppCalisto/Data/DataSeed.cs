@@ -35,7 +35,7 @@ namespace AppCalisto.Data
 
         public async Task CreateRoles()
         {
-            var seedRoles = new List<string> { "Admin", "Back-office", "Front-office" };
+            var seedRoles = new List<string> { "Admin", "Back-office", "Technician" };
             foreach (var role in seedRoles)
             {
                 if (!await _roleRepository.ExistsAsync(role))
@@ -52,9 +52,11 @@ namespace AppCalisto.Data
             {
                 var seedUsers = new List<(string name, string email, IEnumerable<string> roles)>
                 {
-                    ("Admin", "admin@mail", new List<string> { "Admin", "Back-office", "Front-office" }),
-                    ("Employee", "employee@mail", new List<string> { "Back-office", "Front-office" }),
-                    ("Employee 2", "employee2@mail", new List<string> { "Back-office" })
+                    ("Admin", "admin@mail", new List<string> { "Admin", "Back-office", "Technician" }),
+                    ("Admin 2", "admin2@mail", new List<string> { "Admin" }),
+                    ("Employee", "employee@mail", new List<string> { "Back-office" }),
+                    ("Employee 2", "employee2@mail", new List<string> { "Back-office" }),
+                    ("Technician", "technician@mail", new List<string> { "Technician" })
                 };
 
                 foreach (var (name, email, roles) in seedUsers)
@@ -164,14 +166,15 @@ namespace AppCalisto.Data
         {
             if (!await _context.Orders.AnyAsync())
             {
+                var technician = await _userRepository.GetByEmailAsync("technician@mail");
                 var seedOrders = new List<Order>
                 {
                     new Order { Location = "Client 1's Office", Description = "Application development.", Status = "Ongoing", 
-                        ClientId = 1, ServiceId = 1 },
+                        ClientId = 1, ServiceId = 1, TechnicianId = technician.Id },
                     new Order { Location = "Client 1's Office", Description = "Eletric stove repairing.", Status = "Ongoing",
-                        ClientId = 1, ServiceId = 2 },
+                        ClientId = 1, ServiceId = 2, TechnicianId = technician.Id },
                     new Order { Location = "Client 2's Office", Description = "Server systems maintenance.", Status = "Ongoing",
-                        ClientId = 2, ServiceId = 5 },
+                        ClientId = 2, ServiceId = 5, TechnicianId = technician.Id },
                 };
 
                 foreach (var order in seedOrders)

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -49,21 +50,24 @@ namespace AppCalisto.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(UserViewModel model)
-        { 
-            // Load view lists.
-            model.SelectableRoles = _roleRepository.GetAll() ?? new List<SelectListItem>();
-
+        {
             if (!ModelState.IsValid)
             {
                 TempData["Failure"] = "Could not create user.";
-                return View(model);
+                return View(new UserViewModel
+                {
+                    SelectableRoles = _roleRepository.GetAll() ?? new List<SelectListItem>()
+                });
             }
 
             var existingUserByEmail = await _userRepository.GetByEmailAsync(model.Email);
             if (existingUserByEmail != null)
             {
                 TempData["Failure"] = "That email is already being used.";
-                return View(model);
+                return View(new UserViewModel
+                {
+                    SelectableRoles = _roleRepository.GetAll() ?? new List<SelectListItem>()
+                });
             }
 
             var user = new User
@@ -76,7 +80,10 @@ namespace AppCalisto.Controllers
             if (await _userRepository.CreateAsync(user, null) != IdentityResult.Success)
             {
                 TempData["Failure"] = "Could not create user.";
-                return View(model);
+                return View(new UserViewModel
+                {
+                    SelectableRoles = _roleRepository.GetAll() ?? new List<SelectListItem>()
+                });
             }
 
             await _userRepository.AddToRolesAsync(user, model.Roles);
@@ -85,7 +92,10 @@ namespace AppCalisto.Controllers
                 if (!await _userRepository.IsInRoleAsync(user, role))
                 {
                     TempData["Failure"] = "Could not create user.";
-                    return View(model);
+                    return View(new UserViewModel
+                    {
+                        SelectableRoles = _roleRepository.GetAll() ?? new List<SelectListItem>()
+                    });
                 }
             }
 
@@ -104,16 +114,14 @@ namespace AppCalisto.Controllers
             if (!emailSent)
             {
                 TempData["Failure"] = "Could not send account confirmation email.";
-                return View(model);
+                return View(new UserViewModel
+                {
+                    SelectableRoles = _roleRepository.GetAll() ?? new List<SelectListItem>()
+                });
             }
 
             TempData["Success"] = "User created successfully!";
-            ModelState.Clear(); // Clear view form.
-            return View(new UserViewModel
-            { 
-                // Update view lists.
-                SelectableRoles = _roleRepository.GetAll() ?? new List<SelectListItem>()
-            });
+            return RedirectToAction("Create");
         }
 
         public async Task<IActionResult> Details(string id)
@@ -133,6 +141,19 @@ namespace AppCalisto.Controllers
             return View(user);
         }
 
+        private async Task<UserViewModel> BuildEditUserViewModelAsync(User user)
+        {
+            return new UserViewModel
+            {
+                Id = user.Id,
+                Name = user.Name,
+                Email = user.Email,
+                Roles = (await _userRepository.GetRolesAsync(user)).ToList() ?? new List<string>(),
+                SelectableRoles = _roleRepository.GetAll().ToList() ?? new List<SelectListItem>(),
+                LockoutEnd = user.LockoutEnd
+            };
+        }
+
         public async Task<IActionResult> Edit(string id)
         {
             if (string.IsNullOrEmpty(id))
@@ -146,50 +167,48 @@ namespace AppCalisto.Controllers
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
             }
 
-            var model = new UserViewModel
+            if (user.Email == "admin@mail")
             {
-                Id = user.Id,
-                Name = user.Name,
-                Email = user.Email,
-                Roles = (await _userRepository.GetRolesAsync(user)).ToList() ?? new List<string>(),
-                SelectableRoles = _roleRepository.GetAll().Where(r => r.Text != "Admin").ToList() ?? new List<SelectListItem>(),
-                LockoutEnd = user.LockoutEnd
-            };
+                return RedirectToAction("Unauthorized401", "Errors");
+            }
 
-            return View(model);
+            user.Roles = (await _userRepository.GetRolesAsync(user)).ToList() ?? new List<string>();
+            if (user.Roles.Contains("Admin") && User.Identity.Name != "admin@mail")
+            {
+                return RedirectToAction("Unauthorized401", "Errors");
+            }
+
+            return View(await BuildEditUserViewModelAsync(user));
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(UserViewModel model)
         {
-            // Load view lists.
-            model.Roles = model.Roles ?? new List<string>();
-            model.SelectableRoles = _roleRepository.GetAll().Where(r => r.Text != "Admin").ToList() ?? new List<SelectListItem>();
-
-            if (!ModelState.IsValid)
-            {
-                TempData["Failure"] = "Could not update user.";
-                return View(model);
-            }
-
             var user = await _userRepository.GetByIdAsync(model.Id);
             if (user == null)
             {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
             }
 
+            if (!ModelState.IsValid)
+            {
+                TempData["Failure"] = "Could not update user.";
+                return View(await BuildEditUserViewModelAsync(user));
+            }
+
+            user.Roles = (await _userRepository.GetRolesAsync(user)).ToList() ?? new List<string>();
             if (user.Name == model.Name && user.Email == model.Email && user.Roles.OrderBy(r => r).SequenceEqual(model.Roles.OrderBy(r => r)))
             {
                 TempData["Failure"] = "No changes were found.";
-                return View(model);
+                return View(await BuildEditUserViewModelAsync(user));
             }
 
             var existingUserByEmail = await _userRepository.GetByEmailAsync(model.Email);
             if (existingUserByEmail != null && existingUserByEmail != user)
             {
                 TempData["Failure"] = "That email is already being used.";
-                return View(model);
+                return View(await BuildEditUserViewModelAsync(user));
             }
 
             user.Name = model.Name;
@@ -199,26 +218,25 @@ namespace AppCalisto.Controllers
             // Get user roles not included in the model.
             var removedRoles = (user.Roles ?? new List<string>())
                 .Except(model.Roles ?? new List<string>())
-                .Where(r => r != "Admin")
                 .ToList();
+
+            await _userRepository.RemoveFromRolesAsync(user, removedRoles);
 
             // Get model roles not included in the user.
             var addedRoles = (model.Roles ?? new List<string>())
                 .Except(user.Roles ?? new List<string>())
-                .Where(r => r != "Admin")
                 .ToList();
 
-            await _userRepository.RemoveFromRolesAsync(user, removedRoles);
             await _userRepository.AddToRolesAsync(user, addedRoles);
 
             if (await _userRepository.UpdateAsync(user) != IdentityResult.Success)
             {
                 TempData["Failure"] = "Could not update user.";
-                return View(model);
+                return View(await BuildEditUserViewModelAsync(user));
             }
 
             TempData["Success"] = "User updated successfully.";
-            return View(model);
+            return RedirectToAction("Edit", new { id = user.Id });
         }
 
         [HttpPost]
@@ -236,24 +254,15 @@ namespace AppCalisto.Controllers
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
             }
 
-            user.Roles = (await _userRepository.GetRolesAsync(user)).ToList();
-
             if (await _userRepository.LockOutAsync(user) != IdentityResult.Success)
             {
                 TempData["Failure"] = "Could not deactivate user.";
             }
-
-            var model = new UserViewModel
+            else
             {
-                Id = user.Id,
-                Name = user.Name,
-                Email = user.Email,
-                Roles = (await _userRepository.GetRolesAsync(user)).ToList(),
-                SelectableRoles = _roleRepository.GetAll().Where(r => r.Text != "Admin").ToList(),
-                LockoutEnd = user.LockoutEnd
-            };
+                TempData["Success"] = "User deactivated successfully.";
+            }
 
-            TempData["Success"] = "User deactivated successfully.";
             return RedirectToAction("Edit", new { id });
         }
 
@@ -272,24 +281,15 @@ namespace AppCalisto.Controllers
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
             }
 
-            user.Roles = (await _userRepository.GetRolesAsync(user)).ToList();
-
             if (await _userRepository.UnlockAsync(user) != IdentityResult.Success)
             {
                 TempData["Failure"] = "Could not reactivate user.";
             }
-
-            var model = new UserViewModel
+            else
             {
-                Id = user.Id,
-                Name = user.Name,
-                Email = user.Email,
-                Roles = (await _userRepository.GetRolesAsync(user)).ToList(),
-                SelectableRoles = _roleRepository.GetAll().Where(r => r.Text != "Admin").ToList(),
-                LockoutEnd = user.LockoutEnd
-            };
+                TempData["Success"] = "User reactivated successfully.";
+            }
 
-            TempData["Success"] = "User reactivated successfully.";
             return RedirectToAction("Edit", new { id });
         }
     }

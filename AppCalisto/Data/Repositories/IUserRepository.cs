@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using AppCalisto.Data.Entities;
 using System.Collections.Generic;
 using AppCalisto.Models;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace AppCalisto.Data.Repositories
 {
@@ -43,5 +44,7 @@ namespace AppCalisto.Data.Repositories
         Task AddToRolesAsync(User user, IEnumerable<string> roles);
 
         Task RemoveFromRolesAsync(User user, IEnumerable<string> roles);
+
+        Task<IEnumerable<SelectListItem>> GetAllByRoleAsync(string role);
     }
 }

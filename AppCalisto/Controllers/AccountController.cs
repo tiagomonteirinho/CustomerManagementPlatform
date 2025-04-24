@@ -93,7 +93,7 @@ namespace AppCalisto.Controllers
             }
 
             TempData["Failure"] = result.Errors.FirstOrDefault().Description;
-            return View();
+            return RedirectToAction("ChangePassword");
         }
 
         public IActionResult SendPasswordResetEmail()
@@ -142,7 +142,7 @@ namespace AppCalisto.Controllers
                 }
 
                 TempData["Success"] = "Instructions to reset your password have been sent to your email address.";
-                return View();
+                return RedirectToAction("SendPasswordResetEmail");
             }
             else
             {
@@ -165,7 +165,7 @@ namespace AppCalisto.Controllers
                 }
 
                 TempData["Success"] = "This account has not been confirmed. Instructions to confirm it and set your password have been sent to your email address.";
-                return View();
+                return RedirectToAction("SendPasswordResetEmail");
             }
         }
 
@@ -210,7 +210,7 @@ namespace AppCalisto.Controllers
             }
 
             TempData["Success"] = "Password updated successfully!";
-            return View();
+            return RedirectToAction("SetPassword");
         }
     }
 }

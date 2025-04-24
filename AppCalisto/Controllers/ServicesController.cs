@@ -51,7 +51,7 @@ namespace AppCalisto.Controllers
             if (!ModelState.IsValid)
             {
                 TempData["Failure"] = "Could not create service.";
-                return View();
+                return View(model);
             }
 
             var existingServiceByAbbreviation = await _serviceRepository.GetByAbbreviationAsync(model.Abbreviation);
@@ -78,10 +78,7 @@ namespace AppCalisto.Controllers
             }
 
             TempData["Success"] = "Service created successfully!";
-            return View(new ServiceViewModel
-            {
-                CompanyId = model.CompanyId
-            });
+            return RedirectToAction("Create", new { companyId = model.CompanyId });
         }
 
         public async Task<IActionResult> Details(int? id)
@@ -144,7 +141,6 @@ namespace AppCalisto.Controllers
                 return View(model);
             }
 
-
             if (model.Abbreviation != service.Abbreviation)
             {
                 var existingServiceByAbbreviation = await _serviceRepository.GetByAbbreviationAsync(model.Abbreviation);
@@ -160,12 +156,12 @@ namespace AppCalisto.Controllers
 
             if (!await _serviceRepository.UpdateAsync(service))
             {
-                TempData["Failure"] = "Could not update service. This may be due to database constraints or the entity no longer existing.";
+                TempData["Failure"] = "Could not update service. This may be due to the entity being used by other entities or no longer existing.";
                 return View(model);
             }
 
             TempData["Success"] = "Service updated successfully.";
-            return View(model);
+            return RedirectToAction("Edit", new { id = service.Id });
         }
 
         [HttpPost]
@@ -180,8 +176,8 @@ namespace AppCalisto.Controllers
 
             if (!await _serviceRepository.DeleteAsync(service))
             {
-                TempData["Failure"] = "Could not delete service. This may be due to database constraints or the entity no longer existing.";
-                return RedirectToAction("Edit", new { id = service.Id });
+                TempData["Failure"] = "Could not delete service. This may be due to the entity being used by other entities or no longer existing.";
+                return RedirectToAction("Edit", new { id });
             }
 
             TempData["Success"] = "Service deleted successfully.";

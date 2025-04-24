@@ -4,7 +4,6 @@ using AppCalisto.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace AppCalisto.Controllers
 {
@@ -76,7 +75,7 @@ namespace AppCalisto.Controllers
             }
 
             TempData["Success"] = "Client created successfully!";
-            return View(new ClientViewModel());
+            return RedirectToAction("Create");
         }
 
         public async Task<IActionResult> Details(int? id)
@@ -169,12 +168,12 @@ namespace AppCalisto.Controllers
 
             if (!await _clientRepository.UpdateAsync(client))
             {
-                TempData["Failure"] = "Could not update client. This may be due to database constraints or the entity no longer existing.";
+                TempData["Failure"] = "Could not update client. This may be due to the entity being used by other entities or no longer existing.";
                 return View(model);
             }
 
             TempData["Success"] = "Client updated successfully.";
-            return View(model);
+            return RedirectToAction("Edit");
         }
 
         [HttpPost]
@@ -189,7 +188,7 @@ namespace AppCalisto.Controllers
 
             if (!await _clientRepository.DeleteAsync(client))
             {
-                TempData["Failure"] = "Could not delete client. This may be due to database constraints or the entity no longer existing.";
+                TempData["Failure"] = "Could not delete client. This may be due to the entity being used by other entities or no longer existing.";
                 return RedirectToAction("Edit", new { id = client.Id });
             }
 

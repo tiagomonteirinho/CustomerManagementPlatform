@@ -50,6 +50,7 @@ else
                                 <th>Number</th>
                                 <th>Company</th>
                                 <th>Service</th>
+                                <th>Technician</th>
                                 <th>Urgent</th>
                                 <th>Appointment</th>
                                 <th>Location</th>
@@ -68,6 +69,9 @@ else
                                     </td>
                                     <td>
                                         <a asp-controller="Services" asp-action="Details" asp-route-Id="@item.Service.Id">@item.Service.Abbreviation (ID @item.Service.Id)</a>
+                                    </td>
+                                    <td>
+                                        <a asp-controller="Users" asp-action="Details" asp-route-Id="@item.TechnicianId">@item.Technician.Name</a>
                                     </td>
                                     <td>
                                         @(item.IsUrgent ? "Yes" : "No")

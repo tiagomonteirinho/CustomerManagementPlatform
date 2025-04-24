@@ -6,6 +6,7 @@ namespace AppCalisto.Models
     {
         public int Id { get; set; }
 
+        [Required]
         public string Abbreviation { get; set; }
 
         [Required]

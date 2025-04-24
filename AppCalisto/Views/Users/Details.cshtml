@@ -20,9 +20,7 @@
         </dd>
         <dt class="col-sm-2">Active</dt>
         <dd class="col-sm-10">
-            @((Model.Roles ?? new List<string>()).Contains("Admin")
-                ? "Always"
-                : (Model.LockoutEnd == null || Model.LockoutEnd < DateTimeOffset.Now) ? "Yes" : "No")
+            @((Model.LockoutEnd == null || Model.LockoutEnd < DateTimeOffset.Now) ? "Yes" : "No")
         </dd>
     </dl>
 </div>

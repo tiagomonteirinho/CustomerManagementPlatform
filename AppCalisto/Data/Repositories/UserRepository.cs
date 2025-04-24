@@ -1,9 +1,11 @@
 ﻿using AppCalisto.Data.Entities;
 using AppCalisto.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace AppCalisto.Data.Repositories
@@ -116,6 +118,40 @@ namespace AppCalisto.Data.Repositories
         public async Task RemoveFromRolesAsync(User user, IEnumerable<string> roles)
         {
             await _userManager.RemoveFromRolesAsync(user, roles);
+        }
+
+        public async Task<IEnumerable<SelectListItem>> GetAllByRoleAsync(string role)
+        {
+            var users = _context.Users.ToList();
+            var roleUsers = new List<SelectListItem>();
+            foreach (var user in users) {
+                if (await _userManager.IsInRoleAsync(user, role)){
+                    roleUsers.Add(new SelectListItem
+                    {
+                        Text = user.Name,
+                        Value = user.Id
+                    });
+                }
+            }
+
+            if (role == "Technician")
+            {
+                roleUsers.Insert(0, new SelectListItem
+                {
+                    Text = $"(Select a technician...)",
+                    Value = string.Empty
+                });
+            }
+            else
+            {
+                roleUsers.Insert(0, new SelectListItem
+                {
+                    Text = $"(Select a user...)",
+                    Value = string.Empty
+                });
+            }
+
+            return roleUsers;
         }
     }
 }
