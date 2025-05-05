@@ -31,7 +31,7 @@
                 <table class="table table-hover table-responsive-lg" id="MyTable">
                     <thead>
                         <tr>
-                            <th>Id</th>
+                            <th>Number</th>
                             <th>Name</th>
                             <th>Contact person</th>
                             <th>Email</th>
@@ -41,17 +41,17 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var item in Model.OrderBy(i => i.Id))
+                        @foreach (var item in Model)
                         {
                             <tr>
-                                <td>@item.Id</td>
+                                <td>@item.Id.ToString("D4")</td>
                                 <td>@item.Name</td>
                                 <td>@item.ContactPerson</td>
                                 <td>@item.Email</td>
                                 <td>@item.Phone</td>
                                 <td>@item.Tax</td>
                                 <td>
-                                    <a asp-controller="Orders" asp-action="Create" asp-route-ClientId="@item.Id" class="btn btn-sm btn-primary">Add order</a>
+                                    <a asp-controller="Orders" asp-action="Create" asp-route-ClientId="@item.Id" class="btn btn-sm btn-primary">Add new order</a>
                                     <a asp-action="Details" asp-route-Id="@item.Id" class="btn btn-sm btn-info">Details</a>
                                 </td>
                             </tr>
@@ -68,7 +68,9 @@
     <script src="https://cdn.datatables.net/1.10.25/js/dataTables.bootstrap4.min.js"></script>
     <script type="text/javascript">
         $(document).ready(function () {
-            $('#MyTable').DataTable();
+            $('#MyTable').DataTable({
+                "order": [[0, "desc"]]
+            });
         });
     </script>
 }

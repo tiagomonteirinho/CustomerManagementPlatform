@@ -8,9 +8,6 @@ namespace AppCalisto.Data.Entities
         [Required]
         public int Id { get; set; }
 
-        [Required]
-        public string Number { get; set; } = Guid.NewGuid().ToString();
-
         public DateTime Creation { get; set; } = DateTime.Now;
 
         public DateTime Execution { get; set; } = DateTime.Now;
@@ -21,6 +18,7 @@ namespace AppCalisto.Data.Entities
 
         public string Location { get; set; }
 
+        [MaxLength(299)]
         public string Description { get; set; }
 
         public string Status { get; set; }

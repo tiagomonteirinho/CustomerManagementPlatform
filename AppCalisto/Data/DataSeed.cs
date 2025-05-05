@@ -170,11 +170,11 @@ namespace AppCalisto.Data
                 var seedOrders = new List<Order>
                 {
                     new Order { Location = "Client 1's Office", Description = "Application development.", Status = "Ongoing", 
-                        ClientId = 1, ServiceId = 1, TechnicianId = technician.Id },
+                        ClientId = 1000, ServiceId = 1, TechnicianId = technician.Id },
                     new Order { Location = "Client 1's Office", Description = "Eletric stove repairing.", Status = "Ongoing",
-                        ClientId = 1, ServiceId = 2, TechnicianId = technician.Id },
+                        ClientId = 1000, ServiceId = 2, TechnicianId = technician.Id },
                     new Order { Location = "Client 2's Office", Description = "Server systems maintenance.", Status = "Ongoing",
-                        ClientId = 2, ServiceId = 5, TechnicianId = technician.Id },
+                        ClientId = 1001, ServiceId = 5, TechnicianId = technician.Id },
                 };
 
                 foreach (var order in seedOrders)

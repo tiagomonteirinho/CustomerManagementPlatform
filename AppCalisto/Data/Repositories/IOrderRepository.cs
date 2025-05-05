@@ -9,7 +9,5 @@ namespace AppCalisto.Data.Repositories
         Task<List<Order>> GetAllAsync();
 
         Task<Order> GetByIdAsync(int id);
-
-        Task<Order> GetByNumberAsync(string number);
     }
 }

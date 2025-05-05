@@ -12,7 +12,7 @@ namespace AppCalisto.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("SqlServer:Identity", "1000, 1"),
                     Number = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Creation = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Execution = table.Column<DateTime>(type: "datetime2", nullable: false),

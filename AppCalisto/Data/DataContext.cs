@@ -14,6 +14,14 @@ namespace AppCalisto.Data
                 relationship.DeleteBehavior = DeleteBehavior.Restrict;
             }
 
+            modelBuilder.Entity<Client>()
+                .Property(o => o.Id)
+                .UseIdentityColumn(seed: 1000, increment: 1);
+
+            modelBuilder.Entity<Order>()
+                .Property(o => o.Id)
+                .UseIdentityColumn(seed: 1000, increment: 1);
+
             base.OnModelCreating(modelBuilder);
         }
 

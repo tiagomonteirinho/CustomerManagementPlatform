@@ -23,7 +23,7 @@ namespace AppCalisto.Migrations
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                        .Annotation("SqlServer:Identity", "1000, 1"),
                     Name = table.Column<string>(type: "nvarchar(99)", maxLength: 99, nullable: false),
                     ContactPerson = table.Column<string>(type: "nvarchar(99)", maxLength: 99, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: true),

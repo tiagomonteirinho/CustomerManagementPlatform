@@ -148,8 +148,8 @@ namespace AppCalisto.Controllers
                 Id = user.Id,
                 Name = user.Name,
                 Email = user.Email,
-                Roles = (await _userRepository.GetRolesAsync(user)).ToList() ?? new List<string>(),
-                SelectableRoles = _roleRepository.GetAll().ToList() ?? new List<SelectListItem>(),
+                Roles = (await _userRepository.GetRolesAsync(user) ?? new List<string>()).ToList(),
+                SelectableRoles = (_roleRepository.GetAll() ?? new List<SelectListItem>()).ToList(),
                 LockoutEnd = user.LockoutEnd
             };
         }
@@ -172,7 +172,7 @@ namespace AppCalisto.Controllers
                 return RedirectToAction("Unauthorized401", "Errors");
             }
 
-            user.Roles = (await _userRepository.GetRolesAsync(user)).ToList() ?? new List<string>();
+            user.Roles = (await _userRepository.GetRolesAsync(user) ?? new List<string>()).ToList();
             if (user.Roles.Contains("Admin") && User.Identity.Name != "admin@mail")
             {
                 return RedirectToAction("Unauthorized401", "Errors");
@@ -197,7 +197,7 @@ namespace AppCalisto.Controllers
                 return View(await BuildEditUserViewModelAsync(user));
             }
 
-            user.Roles = (await _userRepository.GetRolesAsync(user)).ToList() ?? new List<string>();
+            user.Roles = (await _userRepository.GetRolesAsync(user) ?? new List<string>()).ToList();
             if (user.Name == model.Name && user.Email == model.Email && user.Roles.OrderBy(r => r).SequenceEqual(model.Roles.OrderBy(r => r)))
             {
                 TempData["Failure"] = "No changes were found.";

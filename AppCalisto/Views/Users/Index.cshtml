@@ -40,7 +40,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var item in Model.OrderBy(i => i.Name))
+                        @foreach (var item in Model)
                         {
                             <tr>
                                 <td>@string.Join(", ", item.Roles ?? new List<string>())</td>
@@ -69,7 +69,9 @@
     <script src="https://cdn.datatables.net/1.10.25/js/dataTables.bootstrap4.min.js"></script>
     <script type="text/javascript">
         $(document).ready(function () {
-            $('#MyTable').DataTable();
+            $('#MyTable').DataTable({
+                "order": [[0, "desc"]]
+            });
         });
     </script>
 }

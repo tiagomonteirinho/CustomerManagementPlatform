@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace AppCalisto.Controllers
@@ -124,7 +123,6 @@ namespace AppCalisto.Controllers
             return new OrderViewModel
             {
                 Id = order.Id,
-                Number = order.Number,
                 Creation = order.Creation,
                 Execution = order.Execution,
                 Appointment = order.Appointment,

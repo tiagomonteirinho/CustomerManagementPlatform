@@ -60,7 +60,7 @@ namespace AppCalisto.Data.Repositories
 
         public async Task<List<User>> GetAllAsync()
         {
-            return await _context.Users.ToListAsync();
+            return await _context.Users.AsNoTracking().ToListAsync();
         }
 
         public async Task<User> GetByEmailAsync(string email)

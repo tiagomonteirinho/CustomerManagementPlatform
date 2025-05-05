@@ -10,8 +10,6 @@ namespace AppCalisto.Models
     {
         public int Id { get; set; }
 
-        public string Number { get; set; }
-
         public DateTime Creation { get; set; }
 
         public DateTime Execution { get; set; }
@@ -22,6 +20,7 @@ namespace AppCalisto.Models
 
         public string Location { get; set; }
 
+        [MaxLength(299)]
         public string Description { get; set; }
 
         public string Status { get; set; }

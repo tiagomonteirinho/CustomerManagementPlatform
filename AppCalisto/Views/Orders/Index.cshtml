@@ -31,7 +31,6 @@
                 <table class="table table-hover table-responsive" id="MyTable">
                     <thead>
                         <tr>
-                            <th>Id</th>
                             <th>Number</th>
                             <th>Client</th>
                             <th>Company</th>
@@ -46,19 +45,18 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (var item in Model.OrderBy(i => i.Id))
+                        @foreach (var item in Model)
                         {
                             <tr>
-                                <td>@item.Id</td>
-                                <td>@item.Number</td>
+                                <td>@item.Id.ToString("D4")</td>
                                 <td>
-                                    <a asp-controller="Clients" asp-action="Details" asp-route-Id="@item.Client.Id">@item.Client.Name (ID @item.Client.Id)</a>
+                                    <a asp-controller="Clients" asp-action="Details" asp-route-Id="@item.Client.Id">@item.Client.Name</a>
                                 </td>
                                 <td>
-                                    <a asp-controller="Companies" asp-action="Details" asp-route-Id="@item.Service.CompanyId">@item.Service.Company.Abbreviation (ID @item.Service.CompanyId)</a>
+                                    <a asp-controller="Companies" asp-action="Details" asp-route-Id="@item.Service.CompanyId">@item.Service.Company.Abbreviation</a>
                                 </td>
                                 <td>
-                                    <a asp-controller="Services" asp-action="Details" asp-route-Id="@item.Service.Id">@item.Service.Abbreviation (ID @item.Service.Id)</a>
+                                    <a asp-controller="Services" asp-action="Details" asp-route-Id="@item.Service.Id">@item.Service.Abbreviation</a>
                                 </td>
                                 <td>
                                     <a asp-controller="Users" asp-action="Details" asp-route-Id="@item.TechnicianId">@item.Technician.Name</a>
@@ -92,7 +90,9 @@
     <script src="https://cdn.datatables.net/1.10.25/js/dataTables.bootstrap4.min.js"></script>
     <script type="text/javascript">
         $(document).ready(function () {
-            $('#MyTable').DataTable();
+            $('#MyTable').DataTable({
+                "order": [[0, "desc"]]
+            });
         });
     </script>
 }
