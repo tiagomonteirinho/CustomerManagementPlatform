@@ -1,11 +1,11 @@
-﻿@model IEnumerable<AppCalisto.Data.Entities.Company>
+﻿@model IEnumerable<AppCalisto.Data.Entities.Budget>
 @{
     ViewData["Title"] = "Index";
 }
 
 <link rel="stylesheet" href="https://cdn.datatables.net/1.10.25/css/dataTables.bootstrap4.min.css" />
 
-<h2>All companies</h2>
+<h2>All budgets</h2>
 <br />
 @if (TempData["Success"] != null)
 {
@@ -20,10 +20,6 @@
     </div>
 }
 
-<a asp-action="Create" class="btn btn-primary">Create new company</a>
-<br />
-<br />
-
 <div class="row">
     <div class="col-md-12">
         <div class="card">
@@ -32,8 +28,10 @@
                     <thead>
                         <tr>
                             <th>Number</th>
-                            <th>Abbreviation</th>
-                            <th>Name</th>
+                            <th>Order</th>
+                            <th>Technician</th>
+                            <th>Description</th>
+                            <th>Status</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -41,11 +39,16 @@
                         @foreach (var item in Model)
                         {
                             <tr>
-                                <td>@item.Id</td>
-                                <td>@item.Abbreviation</td>
-                                <td>@item.Name</td>
+                                <td>@item.Id.ToString("D4")</td>
                                 <td>
-                                    <a asp-controller="Services" asp-action="Create" asp-route-CompanyId="@item.Id" class="btn btn-sm btn-primary">Add new service</a>
+                                    <a asp-controller="Orders" asp-action="Details" asp-route-Id="@item.OrderId">Order #@item.OrderId</a>
+                                </td>
+                                <td>
+                                    <a asp-controller="Users" asp-action="Details" asp-route-Id="@item.Order.TechnicianId">@item.Order.Technician.Name</a>
+                                </td>
+                                <td>@Html.Raw(item.Description?.Replace("\n", "<br />"))</td>
+                                <td>@item.Status</td>
+                                <td>
                                     <a asp-action="Details" asp-route-Id="@item.Id" class="btn btn-sm btn-info">Details</a>
                                 </td>
                             </tr>

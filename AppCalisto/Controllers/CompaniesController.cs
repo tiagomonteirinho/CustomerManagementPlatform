@@ -154,10 +154,17 @@ namespace AppCalisto.Controllers
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "Company" });
             }
 
+            var existingCompanies = await _companyRepository.GetAllAsync();
+            if (existingCompanies.Count == 1)
+            {
+                TempData["Failure"] = "There must be at least one company in the database.";
+                return RedirectToAction("Edit", new { id });
+            }
+
             if (!await _companyRepository.DeleteAsync(company))
             {
                 TempData["Failure"] = "Could not delete company. This may be due to the entity being used by other entities or no longer existing.";
-                return RedirectToAction("Edit", new { id = company.Id });
+                return RedirectToAction("Edit", new { id });
             }
 
             TempData["Success"] = "Company deleted successfully.";

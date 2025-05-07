@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace AppCalisto.Data.Entities
@@ -21,8 +22,6 @@ namespace AppCalisto.Data.Entities
         [MaxLength(299)]
         public string Description { get; set; }
 
-        public string Status { get; set; }
-
         public Client Client { get; set; }
 
         [Required]
@@ -37,5 +36,7 @@ namespace AppCalisto.Data.Entities
 
         [Required]
         public string TechnicianId { get; set; }
+
+        public ICollection<Budget> Budgets { get; set; } = new List<Budget>();
     }
 }

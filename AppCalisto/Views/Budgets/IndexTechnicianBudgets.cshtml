@@ -1,11 +1,11 @@
-﻿@model IEnumerable<AppCalisto.Data.Entities.Company>
+﻿@model IEnumerable<AppCalisto.Data.Entities.Budget>
 @{
     ViewData["Title"] = "Index";
 }
 
 <link rel="stylesheet" href="https://cdn.datatables.net/1.10.25/css/dataTables.bootstrap4.min.css" />
 
-<h2>All companies</h2>
+<h2>Budgets</h2>
 <br />
 @if (TempData["Success"] != null)
 {
@@ -20,7 +20,7 @@
     </div>
 }
 
-<a asp-action="Create" class="btn btn-primary">Create new company</a>
+<a asp-controller="Orders" asp-action="IndexTechnicianOrders" class="btn btn-primary">Create new budget</a>
 <br />
 <br />
 
@@ -32,8 +32,9 @@
                     <thead>
                         <tr>
                             <th>Number</th>
-                            <th>Abbreviation</th>
-                            <th>Name</th>
+                            <th>Order</th>
+                            <th>Description</th>
+                            <th>Status</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -41,12 +42,12 @@
                         @foreach (var item in Model)
                         {
                             <tr>
-                                <td>@item.Id</td>
-                                <td>@item.Abbreviation</td>
-                                <td>@item.Name</td>
+                                <td>@item.Id.ToString("D4")</td>
+                                <td>Order #@item.OrderId</td>
+                                <td>@Html.Raw(item.Description?.Replace("\n", "<br />"))</td>
+                                <td>@item.Status</td>
                                 <td>
-                                    <a asp-controller="Services" asp-action="Create" asp-route-CompanyId="@item.Id" class="btn btn-sm btn-primary">Add new service</a>
-                                    <a asp-action="Details" asp-route-Id="@item.Id" class="btn btn-sm btn-info">Details</a>
+                                    <a asp-action="DetailTechnicianBudget" asp-route-Id="@item.Id" class="btn btn-sm btn-info">Details</a>
                                 </td>
                             </tr>
                         }

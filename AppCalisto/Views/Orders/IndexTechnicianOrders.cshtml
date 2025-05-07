@@ -1,11 +1,11 @@
-﻿@model IEnumerable<AppCalisto.Data.Entities.Service>
+﻿@model IEnumerable<AppCalisto.Data.Entities.Order>
 @{
     ViewData["Title"] = "Index";
 }
 
 <link rel="stylesheet" href="https://cdn.datatables.net/1.10.25/css/dataTables.bootstrap4.min.css" />
 
-<h2>All services</h2>
+<h2>Orders</h2>
 <br />
 @if (TempData["Success"] != null)
 {
@@ -20,21 +20,21 @@
     </div>
 }
 
-<a asp-controller="Companies" asp-action="Index" class="btn btn-primary">Create new service</a>
-<br />
-<br />
-
 <div class="row">
     <div class="col-md-12">
         <div class="card">
             <div class="card-body">
-                <table class="table table-hover table-responsive-lg" id="MyTable">
+                <table class="table table-hover table-responsive" id="MyTable">
                     <thead>
                         <tr>
                             <th>Number</th>
-                            <th>Abbreviation</th>
-                            <th>Name</th>
+                            <th>Client</th>
                             <th>Company</th>
+                            <th>Service</th>
+                            <th>Created</th>
+                            <th>Urgent</th>
+                            <th>Appointment</th>
+                            <th>Location</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -42,14 +42,22 @@
                         @foreach (var item in Model)
                         {
                             <tr>
-                                <td>@item.Id</td>
-                                <td>@item.Abbreviation</td>
-                                <td>@item.Name</td>
+                                <td>@item.Id.ToString("D4")</td>
+                                <td>@item.Client.Name</td>
+                                <td>@item.Service.Company.Abbreviation</td>
+                                <td>@item.Service.Abbreviation</td>
+                                <td>@item.Creation</td>
+                                <td>@(item.IsUrgent ? "Yes" : "No")</td>
                                 <td>
-                                    <a asp-controller="Companies" asp-action="Details" asp-route-Id="@item.Company.Id">@item.Company.Name</a>
+                                    @if (item.Appointment > item.Creation)
+                                    {
+                                        @item.Appointment
+                                    }
                                 </td>
+                                <td>@item.Location</td>
                                 <td>
-                                    <a asp-action="Details" asp-route-Id="@item.Id" class="btn btn-sm btn-info">Details</a>
+                                    <a asp-controller="Budgets" asp-action="Create" asp-route-OrderId="@item.Id" class="btn btn-sm btn-primary">Add new budget</a>
+                                    <a asp-action="DetailTechnicianOrder" asp-route-Id="@item.Id" class="btn btn-sm btn-info">Details</a>
                                 </td>
                             </tr>
                         }

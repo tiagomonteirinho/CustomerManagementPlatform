@@ -48,6 +48,26 @@
                                         <li class="nav-item">
                                             <a class="nav-link text-dark" asp-controller="Orders" asp-action="Index">Orders</a>
                                         </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link text-dark" asp-controller="Products" asp-action="Index">Products</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link text-dark" asp-controller="Budgets" asp-action="Index">Budgets</a>
+                                        </li>
+                                    </ul>
+                                </li>
+                            }
+                            @if (User.IsInRole("Technician"))
+                            {
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownBackoffice" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Technician</a>
+                                    <ul class="dropdown-menu" aria-labelledby="navbarDropdownBackoffice">
+                                        <li class="nav-item">
+                                            <a class="nav-link text-dark" asp-controller="Orders" asp-action="IndexTechnicianOrders">Orders</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link text-dark" asp-controller="Budgets" asp-action="IndexTechnicianBudgets">Budgets</a>
+                                        </li>
                                     </ul>
                                 </li>
                             }

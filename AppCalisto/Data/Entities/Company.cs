@@ -9,6 +9,7 @@ namespace AppCalisto.Data.Entities
         public int Id { get; set; }
 
         [Required]
+        [MaxLength(5)]
         public string Abbreviation { get; set; }
 
         [Required]

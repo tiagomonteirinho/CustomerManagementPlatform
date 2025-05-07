@@ -23,8 +23,6 @@ namespace AppCalisto.Models
         [MaxLength(299)]
         public string Description { get; set; }
 
-        public string Status { get; set; }
-
         public Client Client { get; set; }
 
         [Required]

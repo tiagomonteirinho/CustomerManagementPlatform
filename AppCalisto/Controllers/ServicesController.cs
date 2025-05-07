@@ -4,7 +4,6 @@ using AppCalisto.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace AppCalisto.Controllers
 {
@@ -40,6 +39,7 @@ namespace AppCalisto.Controllers
 
             return View(new ServiceViewModel
             {
+                Company = company,
                 CompanyId = companyId.Value
             });
         }
@@ -172,6 +172,13 @@ namespace AppCalisto.Controllers
             if (service == null)
             {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "Service" });
+            }
+
+            var existingServices = await _serviceRepository.GetAllAsync();
+            if (existingServices.Count == 1)
+            {
+                TempData["Failure"] = "There must be at least one service in the database.";
+                return RedirectToAction("Edit", new { id });
             }
 
             if (!await _serviceRepository.DeleteAsync(service))

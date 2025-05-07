@@ -33,14 +33,12 @@
                         <tr>
                             <th>Number</th>
                             <th>Client</th>
-                            <th>Company</th>
                             <th>Service</th>
                             <th>Technician</th>
                             <th>Created</th>
                             <th>Urgent</th>
                             <th>Appointment</th>
                             <th>Location</th>
-                            <th>Status</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -51,9 +49,6 @@
                                 <td>@item.Id.ToString("D4")</td>
                                 <td>
                                     <a asp-controller="Clients" asp-action="Details" asp-route-Id="@item.Client.Id">@item.Client.Name</a>
-                                </td>
-                                <td>
-                                    <a asp-controller="Companies" asp-action="Details" asp-route-Id="@item.Service.CompanyId">@item.Service.Company.Abbreviation</a>
                                 </td>
                                 <td>
                                     <a asp-controller="Services" asp-action="Details" asp-route-Id="@item.Service.Id">@item.Service.Abbreviation</a>
@@ -72,7 +67,6 @@
                                     }
                                 </td>
                                 <td>@item.Location</td>
-                                <td>@item.Status</td>
                                 <td>
                                     <a asp-action="Details" asp-route-Id="@item.Id" class="btn btn-sm btn-info">Details</a>
                                 </td>

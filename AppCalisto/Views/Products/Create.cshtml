@@ -1,9 +1,9 @@
-﻿@model AppCalisto.Models.ServiceViewModel;
+﻿@model AppCalisto.Models.ProductViewModel;
 @{
-    ViewData["Title"] = "Create new service";
+    ViewData["Title"] = "Create new product";
 }
 
-<h2>Create new service</h2>
+<h2>Create new product</h2>
 <hr />
 @if (TempData["Success"] != null)
 {
@@ -22,18 +22,21 @@
     <div class="col-md-4 offset-md-4">
         <form method="post">
             <div asp-validation-summary="ModelOnly"></div>
-            <input type="hidden" asp-for="CompanyId" />
 
-
-            <div class="form-group">
-                <label asp-for="Abbreviation">Abbreviation</label>
-                <input asp-for="Abbreviation" class="form-control" oninput="this.value = this.value.toUpperCase()" maxlength="5" />
-                <span asp-validation-for="Abbreviation" class="text-warning"></span>
-            </div>
             <div class="form-group">
                 <label asp-for="Name">Name</label>
                 <input asp-for="Name" class="form-control" />
                 <span asp-validation-for="Name" class="text-warning"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Price">Price</label>
+                <input asp-for="Price" class="form-control" type="number" min="0" />
+                <span asp-validation-for="Price" class="text-warning"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Tax">Tax</label>
+                <select asp-for="Tax" asp-items="Model.SelectableTaxes" class="form-control"></select>
+                <span asp-validation-for="Tax" class="text-warning"></span>
             </div>
 
             <div class="form-group">
