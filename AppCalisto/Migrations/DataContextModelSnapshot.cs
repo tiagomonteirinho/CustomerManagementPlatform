@@ -19,6 +19,42 @@ namespace AppCalisto.Migrations
                 .HasAnnotation("ProductVersion", "5.0.17")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+            modelBuilder.Entity("AppCalisto.Data.Entities.Appointment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:IdentityIncrement", 1)
+                        .HasAnnotation("SqlServer:IdentitySeed", 1000)
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<DateTime>("EndTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Location")
+                        .IsRequired()
+                        .HasMaxLength(99)
+                        .HasColumnType("nvarchar(99)");
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("StartTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("TechnicianId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId");
+
+                    b.HasIndex("TechnicianId");
+
+                    b.ToTable("Appointments");
+                });
+
             modelBuilder.Entity("AppCalisto.Data.Entities.Budget", b =>
                 {
                     b.Property<int>("Id")
@@ -28,45 +64,15 @@ namespace AppCalisto.Migrations
                         .HasAnnotation("SqlServer:IdentitySeed", 1000)
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<string>("Description")
-                        .HasMaxLength(299)
-                        .HasColumnType("nvarchar(299)");
-
                     b.Property<int>("OrderId")
                         .HasColumnType("int");
 
-                    b.Property<string>("Status")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("TechnicianId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<decimal>("Total")
-                        .HasColumnType("decimal(18,2)");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("OrderId");
-
-                    b.HasIndex("TechnicianId");
+                    b.HasIndex("OrderId")
+                        .IsUnique();
 
                     b.ToTable("Budgets");
-                });
-
-            modelBuilder.Entity("AppCalisto.Data.Entities.BudgetProduct", b =>
-                {
-                    b.Property<int>("BudgetId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ProductId")
-                        .HasColumnType("int");
-
-                    b.HasKey("BudgetId", "ProductId");
-
-                    b.HasIndex("ProductId");
-
-                    b.ToTable("BudgetProduct");
                 });
 
             modelBuilder.Entity("AppCalisto.Data.Entities.Client", b =>
@@ -94,7 +100,7 @@ namespace AppCalisto.Migrations
                         .HasMaxLength(15)
                         .HasColumnType("nvarchar(15)");
 
-                    b.Property<string>("Tax")
+                    b.Property<string>("Tin")
                         .HasMaxLength(15)
                         .HasColumnType("nvarchar(15)");
 
@@ -125,6 +131,55 @@ namespace AppCalisto.Migrations
                     b.ToTable("Companies");
                 });
 
+            modelBuilder.Entity("AppCalisto.Data.Entities.Item", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("BudgetId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BudgetId");
+
+                    b.HasIndex("ProductId");
+
+                    b.ToTable("Items");
+                });
+
+            modelBuilder.Entity("AppCalisto.Data.Entities.Observation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:IdentityIncrement", 1)
+                        .HasAnnotation("SqlServer:IdentitySeed", 1000)
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(299)
+                        .HasColumnType("nvarchar(299)");
+
+                    b.Property<int>("OrderId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrderId")
+                        .IsUnique();
+
+                    b.ToTable("Observations");
+                });
+
             modelBuilder.Entity("AppCalisto.Data.Entities.Order", b =>
                 {
                     b.Property<int>("Id")
@@ -134,30 +189,24 @@ namespace AppCalisto.Migrations
                         .HasAnnotation("SqlServer:IdentitySeed", 1000)
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<DateTime>("Appointment")
-                        .HasColumnType("datetime2");
+                    b.Property<string>("ClientDescription")
+                        .HasMaxLength(299)
+                        .HasColumnType("nvarchar(299)");
 
                     b.Property<int>("ClientId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("Creation")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(299)
-                        .HasColumnType("nvarchar(299)");
-
-                    b.Property<DateTime>("Execution")
+                    b.Property<DateTime>("CreationTime")
                         .HasColumnType("datetime2");
 
                     b.Property<bool>("IsUrgent")
                         .HasColumnType("bit");
 
-                    b.Property<string>("Location")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int>("ServiceId")
                         .HasColumnType("int");
+
+                    b.Property<string>("Status")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("TechnicianId")
                         .IsRequired()
@@ -183,16 +232,16 @@ namespace AppCalisto.Migrations
                         .HasAnnotation("SqlServer:IdentitySeed", 1000)
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<decimal>("BasePrice")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(99)
                         .HasColumnType("nvarchar(99)");
 
-                    b.Property<decimal>("Price")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal>("Tax")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<int>("TaxRate")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -426,10 +475,10 @@ namespace AppCalisto.Migrations
                     b.ToTable("AspNetUserTokens");
                 });
 
-            modelBuilder.Entity("AppCalisto.Data.Entities.Budget", b =>
+            modelBuilder.Entity("AppCalisto.Data.Entities.Appointment", b =>
                 {
                     b.HasOne("AppCalisto.Data.Entities.Order", "Order")
-                        .WithMany("Budgets")
+                        .WithMany("Appointments")
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -445,10 +494,21 @@ namespace AppCalisto.Migrations
                     b.Navigation("Technician");
                 });
 
-            modelBuilder.Entity("AppCalisto.Data.Entities.BudgetProduct", b =>
+            modelBuilder.Entity("AppCalisto.Data.Entities.Budget", b =>
                 {
-                    b.HasOne("AppCalisto.Data.Entities.Budget", "Budget")
-                        .WithMany("BudgetProducts")
+                    b.HasOne("AppCalisto.Data.Entities.Order", "Order")
+                        .WithOne("Budget")
+                        .HasForeignKey("AppCalisto.Data.Entities.Budget", "OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Order");
+                });
+
+            modelBuilder.Entity("AppCalisto.Data.Entities.Item", b =>
+                {
+                    b.HasOne("AppCalisto.Data.Entities.Budget", null)
+                        .WithMany("Items")
                         .HasForeignKey("BudgetId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -459,9 +519,18 @@ namespace AppCalisto.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Budget");
-
                     b.Navigation("Product");
+                });
+
+            modelBuilder.Entity("AppCalisto.Data.Entities.Observation", b =>
+                {
+                    b.HasOne("AppCalisto.Data.Entities.Order", "Order")
+                        .WithOne("Observation")
+                        .HasForeignKey("AppCalisto.Data.Entities.Observation", "OrderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Order");
                 });
 
             modelBuilder.Entity("AppCalisto.Data.Entities.Order", b =>
@@ -555,7 +624,7 @@ namespace AppCalisto.Migrations
 
             modelBuilder.Entity("AppCalisto.Data.Entities.Budget", b =>
                 {
-                    b.Navigation("BudgetProducts");
+                    b.Navigation("Items");
                 });
 
             modelBuilder.Entity("AppCalisto.Data.Entities.Client", b =>
@@ -570,7 +639,11 @@ namespace AppCalisto.Migrations
 
             modelBuilder.Entity("AppCalisto.Data.Entities.Order", b =>
                 {
-                    b.Navigation("Budgets");
+                    b.Navigation("Appointments");
+
+                    b.Navigation("Budget");
+
+                    b.Navigation("Observation");
                 });
 #pragma warning restore 612, 618
         }

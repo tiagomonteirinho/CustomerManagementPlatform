@@ -32,7 +32,6 @@ namespace AppCalisto.Data
             await CreateServices();
             await CreateOrders();
             await CreateProducts();
-            await CreateBudgets();
         }
 
         public async Task CreateRoles()
@@ -112,11 +111,11 @@ namespace AppCalisto.Data
             {
                 var seedClients = new List<Client>
                 {
-                    new Client { Name = "Client 1", ContactPerson = "Person 1", Email = "client@mail", Phone = "111111111", Tax = "111111111" },
-                    new Client { Name = "Client 2", ContactPerson = "Person 2", Email = "client2@mail", Phone = "222222222", Tax = "222222222" }
+                    new Client { Name = "Client 1", ContactPerson = "Person 1", Email = "client@mail", Phone = "111111111", Tin = "111111111" },
+                    new Client { Name = "Client 2", ContactPerson = "Person 2", Email = "client2@mail", Phone = "222222222", Tin = "222222222" }
                 };
 
-                _context.Clients.AddRange(seedClients.AsEnumerable().Reverse());
+                await _context.Clients.AddRangeAsync(seedClients.AsEnumerable().Reverse());
                 await _context.SaveChangesAsync();
             }
         }
@@ -131,7 +130,7 @@ namespace AppCalisto.Data
                     new Company { Name = "Company 2", Abbreviation = "COMP2" }
                 };
 
-                _context.Companies.AddRange(seedCompanies.AsEnumerable().Reverse());
+                await _context.Companies.AddRangeAsync(seedCompanies.AsEnumerable().Reverse());
                 await _context.SaveChangesAsync();
             }
         }
@@ -160,7 +159,7 @@ namespace AppCalisto.Data
                     service.Company = company;
                 }
 
-                _context.Services.AddRange(seedServices.AsEnumerable().Reverse());
+                await _context.Services.AddRangeAsync(seedServices.AsEnumerable().Reverse());
                 await _context.SaveChangesAsync();
             }
         }
@@ -169,15 +168,13 @@ namespace AppCalisto.Data
         {
             if (!await _context.Orders.AnyAsync())
             {
-                var technician = await _userRepository.GetByEmailAsync("technician@mail");
+                var technician = await _userRepository.GetByEmailAsync("admin@mail");
+                var technician2 = await _userRepository.GetByEmailAsync("technician@mail");
                 var seedOrders = new List<Order>
                 {
-                    new Order { Location = "Client 1's Office", Description = "Application development.",
-                        ClientId = 1000, ServiceId = 1, TechnicianId = technician.Id },
-                    new Order { Location = "Client 1's Office", Description = "Eletric stove repairing.",
-                        ClientId = 1000, ServiceId = 2, TechnicianId = technician.Id },
-                    new Order { Location = "Client 2's Office", Description = "Server systems maintenance.",
-                        ClientId = 1001, ServiceId = 5, TechnicianId = technician.Id },
+                    new Order { ClientId = 1000, ServiceId = 1, TechnicianId = technician.Id },
+                    new Order { ClientId = 1000, ServiceId = 2, TechnicianId = technician2.Id },
+                    new Order { ClientId = 1001, ServiceId = 5, TechnicianId = technician2.Id },
                 };
 
                 foreach (var order in seedOrders)
@@ -191,12 +188,23 @@ namespace AppCalisto.Data
                     var service = await _context.Services.FirstOrDefaultAsync(s => s.Id == order.ServiceId);
                     if (service == null)
                     {
-                        throw new InvalidOperationException($"Could not find seed service."); 
+                        throw new InvalidOperationException($"Could not find seed service.");
                     }
-                }
 
-                _context.Orders.AddRange(seedOrders.AsEnumerable().Reverse());
-                await _context.SaveChangesAsync();
+                    await _context.Orders.AddAsync(order);
+                    await _context.SaveChangesAsync();
+
+                    var observation = new Observation { OrderId = order.Id };
+                    await _context.Observations.AddAsync(observation);
+
+                    var budget = new Budget { OrderId = order.Id };
+                    await _context.Budgets.AddAsync(budget);
+
+                    order.Observation = observation;
+                    order.Budget = budget;
+                    _context.Orders.Update(order);
+                    await _context.SaveChangesAsync();
+                }
             }
         }
 
@@ -206,56 +214,11 @@ namespace AppCalisto.Data
             {
                 var seedProducts = new List<Product>
                 {
-                    new Product { Name = "Product 1", Price = 12.57M, Tax = 23M },
-                    new Product { Name = "Product 2", Price = 43.09M, Tax = 6M }     
+                    new Product { Name = "Product 1", BasePrice = 12.57M, TaxRate = 23 },
+                    new Product { Name = "Product 2", BasePrice = 43.09M, TaxRate = 6 }     
                 };
 
                 _context.Products.AddRange(seedProducts.AsEnumerable().Reverse());
-                await _context.SaveChangesAsync();
-            }
-        }
-
-        public async Task CreateBudgets()
-        {
-            if (!await _context.Budgets.AnyAsync())
-            {
-                var seedBudgets = new List<Budget>
-                {
-                    new Budget { Description = "Eletric stove and dishwasher repairing.",
-                        OrderId = 1001, Status = "Pending" },
-                    new Budget { Description = "Server systems maintenance.",
-                        OrderId = 1002, Status = "Pending" },
-                };
-
-                foreach (var budget in seedBudgets)
-                {
-                    var order = await _context.Orders.FirstOrDefaultAsync(o => o.Id == budget.OrderId);
-                    if (order == null)
-                    {
-                        throw new InvalidOperationException($"Could not find seed order.");
-                    }
-                }
-
-                _context.Budgets.AddRange(seedBudgets.AsEnumerable().Reverse());
-                await _context.SaveChangesAsync();
-
-                var product1 = await _context.Products.FirstOrDefaultAsync(p => p.Id == 1000);
-                var product2 = await _context.Products.FirstOrDefaultAsync(p => p.Id == 1001);
-
-                if (product1 == null || product2 == null)
-                {
-                    throw new InvalidOperationException($"Could not find seed product.");
-                }
-
-                var budgetProducts = new List<BudgetProduct>
-                {
-                    new BudgetProduct { BudgetId = seedBudgets[0].Id, ProductId = product1.Id },
-                    new BudgetProduct { BudgetId = seedBudgets[0].Id, ProductId = product2.Id },
-                    new BudgetProduct { BudgetId = seedBudgets[1].Id, ProductId = product1.Id },
-                    new BudgetProduct { BudgetId = seedBudgets[1].Id, ProductId = product2.Id },
-                };
-
-                _context.AddRange(budgetProducts);
                 await _context.SaveChangesAsync();
             }
         }

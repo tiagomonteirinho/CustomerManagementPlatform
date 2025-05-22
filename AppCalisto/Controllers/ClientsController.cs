@@ -47,9 +47,9 @@ namespace AppCalisto.Controllers
                 }
             }
 
-            if (!string.IsNullOrEmpty(model.Tax))
+            if (!string.IsNullOrEmpty(model.Tin))
             {
-                var existingClientByTax = await _clientRepository.GetByTaxAsync(model.Tax);
+                var existingClientByTax = await _clientRepository.GetByTaxAsync(model.Tin);
                 if (existingClientByTax != null)
                 {
                     TempData["Failure"] = "That tax ID is already being used.";
@@ -63,7 +63,7 @@ namespace AppCalisto.Controllers
                 ContactPerson = model.ContactPerson,
                 Email = model.Email,
                 Phone = model.Phone,
-                Tax = model.Tax
+                Tin = model.Tin
             };
 
             await _clientRepository.CreateAsync(client);
@@ -81,15 +81,11 @@ namespace AppCalisto.Controllers
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
-            {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "Client" });
-            }
 
             var client = await _clientRepository.GetByIdAsync(id.Value);
             if (client == null)
-            {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "Client" });
-            }
 
             return View(client);
         }
@@ -97,15 +93,11 @@ namespace AppCalisto.Controllers
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
-            {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "Client" });
-            }
 
             var client = await _clientRepository.GetByIdAsync(id.Value);
             if (client == null)
-            {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "Client" });
-            }
 
             return View(new ClientViewModel
             {
@@ -114,7 +106,7 @@ namespace AppCalisto.Controllers
                 ContactPerson = client.ContactPerson,
                 Email = client.Email,
                 Phone = client.Phone,
-                Tax = client.Tax
+                Tin = client.Tin
             });
         }
 
@@ -130,11 +122,9 @@ namespace AppCalisto.Controllers
 
             var client = await _clientRepository.GetByIdAsync(model.Id);
             if (client == null)
-            {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "Client" });
-            }
 
-            if (client.Name == model.Name && client.ContactPerson == model.ContactPerson && client.Email == model.Email && client.Phone == model.Phone && client.Tax == model.Tax)
+            if (client.Name == model.Name && client.ContactPerson == model.ContactPerson && client.Email == model.Email && client.Phone == model.Phone && client.Tin == model.Tin)
             {
                 TempData["Failure"] = "No changes were found.";
                 return View(model);
@@ -150,9 +140,9 @@ namespace AppCalisto.Controllers
                 }
             }
 
-            if (!string.IsNullOrEmpty(model.Tax) && model.Tax != client.Tax)
+            if (!string.IsNullOrEmpty(model.Tin) && model.Tin != client.Tin)
             {
-                var existingClientByTax = await _clientRepository.GetByTaxAsync(model.Tax);
+                var existingClientByTax = await _clientRepository.GetByTaxAsync(model.Tin);
                 if (existingClientByTax != null)
                 {
                     TempData["Failure"] = "That tax ID is already being used.";
@@ -164,7 +154,7 @@ namespace AppCalisto.Controllers
             client.ContactPerson = model.ContactPerson;
             client.Email = model.Email;
             client.Phone = model.Phone;
-            client.Tax = model.Tax;
+            client.Tin = model.Tin;
 
             if (!await _clientRepository.UpdateAsync(client))
             {
@@ -182,9 +172,7 @@ namespace AppCalisto.Controllers
         {
             var client = await _clientRepository.GetByIdAsync(id);
             if (client == null)
-            {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "Client" });
-            }
 
             var existingClients = await _clientRepository.GetAllAsync();
             if (existingClients.Count == 1)

@@ -17,39 +17,50 @@ namespace AppCalisto.Data
             }
 
             modelBuilder.Entity<Client>()
-                .Property(o => o.Id)
-                .UseIdentityColumn(seed: 1000, increment: 1);
-
-            modelBuilder.Entity<Order>()
-                .Property(o => o.Id)
+                .Property(e => e.Id)
                 .UseIdentityColumn(seed: 1000, increment: 1);
 
             modelBuilder.Entity<Product>()
-                .Property(o => o.Id)
+                .Property(e => e.Id)
+                .UseIdentityColumn(seed: 1000, increment: 1);
+
+            modelBuilder.Entity<Order>()
+                .Property(e => e.Id)
+                .UseIdentityColumn(seed: 1000, increment: 1);
+
+            modelBuilder.Entity<Appointment>()
+                .Property(e => e.Id)
                 .UseIdentityColumn(seed: 1000, increment: 1);
 
             modelBuilder.Entity<Budget>()
-                .Property(o => o.Id)
+                .Property(e => e.Id)
                 .UseIdentityColumn(seed: 1000, increment: 1);
 
-            modelBuilder.Entity<BudgetProduct>()
-                .HasKey(bp => new { bp.BudgetId, bp.ProductId });
+            modelBuilder.Entity<Observation>()
+                .Property(e => e.Id)
+                .UseIdentityColumn(seed: 1000, increment: 1);
         }
 
         public DataContext(DbContextOptions<DataContext> options) : base(options)
         {
         }
 
-        public DbSet<Client> Clients { get; set; }
-
-        public DbSet<Order> Orders { get; set; }
-
         public DbSet<Company> Companies { get; set; }
 
         public DbSet<Service> Services { get; set; }
 
-        public DbSet<Product> Products { get; set; }
+        public DbSet<Client> Clients { get; set; }
+
+        public DbSet<Order> Orders { get; set; }
+
+        public DbSet<Appointment> Appointments { get; set; }
+
+        public DbSet<Observation> Observations { get; set; }
 
         public DbSet<Budget> Budgets { get; set; }
+
+        public DbSet<Product> Products { get; set; }
+
+        public DbSet<Item> Items { get; set; }
     }
 }

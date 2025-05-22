@@ -33,8 +33,10 @@
                         <tr>
                             <th>Number</th>
                             <th>Name</th>
-                            <th>Price</th>
-                            <th>Tax</th>
+                            <th>Base Price</th>
+                            <th>Tax Rate</th>
+                            <th>Tax Amount</th>
+                            <th>Unit Price</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -44,8 +46,10 @@
                             <tr>
                                 <td>@item.Id</td>
                                 <td>@item.Name</td>
-                                <td>@item.Price€</td>
-                                <td>@item.Tax.ToString("0")%</td>
+                                <td>@item.BasePrice€</td>
+                                <td>@item.TaxRate%</td>
+                                <td>+@item.TaxAmount.ToString("0.00")€</td>
+                                <td>@item.UnitPrice.ToString("0.00")€</td>
                                 <td>
                                     <a asp-action="Details" asp-route-Id="@item.Id" class="btn btn-sm btn-info">Details</a>
                                 </td>

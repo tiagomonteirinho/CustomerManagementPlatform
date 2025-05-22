@@ -9,18 +9,14 @@ namespace AppCalisto.Data.Entities
         [Required]
         public int Id { get; set; }
 
-        public DateTime Creation { get; set; } = DateTime.Now;
-
-        public DateTime Execution { get; set; } = DateTime.Now;
-
-        public DateTime Appointment { get; set; } = DateTime.Now;
+        public DateTime CreationTime { get; set; } = DateTime.Now;
 
         public bool IsUrgent { get; set; }
 
-        public string Location { get; set; }
+        public string Status { get; set; }
 
         [MaxLength(299)]
-        public string Description { get; set; }
+        public string ClientDescription { get; set; }
 
         public Client Client { get; set; }
 
@@ -37,6 +33,10 @@ namespace AppCalisto.Data.Entities
         [Required]
         public string TechnicianId { get; set; }
 
-        public ICollection<Budget> Budgets { get; set; } = new List<Budget>();
+        public Observation Observation { get; set; }
+
+        public Budget Budget { get; set; }
+
+        public ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
     }
 }

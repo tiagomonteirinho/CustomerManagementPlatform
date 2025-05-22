@@ -65,15 +65,11 @@ namespace AppCalisto.Controllers
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
-            {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "Company" });
-            }
 
             var company = await _companyRepository.GetByIdAsync(id.Value);
             if (company == null)
-            {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "Company" });
-            }
 
             return View(company);
         }
@@ -81,15 +77,11 @@ namespace AppCalisto.Controllers
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
-            {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "Company" });
-            }
 
             var company = await _companyRepository.GetByIdAsync(id.Value);
             if (company == null)
-            {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "Company" });
-            }
 
             return View(new CompanyViewModel
             {
@@ -111,9 +103,7 @@ namespace AppCalisto.Controllers
 
             var company = await _companyRepository.GetByIdAsync(model.Id);
             if (company == null)
-            {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "Company" });
-            }
 
             if (company.Abbreviation == model.Abbreviation && company.Name == model.Name)
             {
@@ -150,9 +140,7 @@ namespace AppCalisto.Controllers
         {
             var company = await _companyRepository.GetByIdAsync(id);
             if (company == null)
-            {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "Company" });
-            }
 
             var existingCompanies = await _companyRepository.GetAllAsync();
             if (existingCompanies.Count == 1)

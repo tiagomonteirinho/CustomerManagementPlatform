@@ -40,13 +40,13 @@ namespace AppCalisto.Controllers
             var product = new Product()
             {
                 Name = model.Name,
-                Price = model.Price,
-                Tax = model.Tax
+                BasePrice = model.BasePrice,
+                TaxRate = model.TaxRate
             };
 
             await _productRepository.CreateAsync(product);
             var createdProduct = await _productRepository.GetByIdAsync(product.Id);
-            if (product == null)
+            if (createdProduct == null)
             {
                 TempData["Failure"] = "Could not create product.";
                 return View(model);
@@ -59,15 +59,11 @@ namespace AppCalisto.Controllers
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
-            {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "Product" });
-            }
 
             var product = await _productRepository.GetByIdAsync(id.Value);
             if (product == null)
-            {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "Product" });
-            }
 
             return View(product);
         }
@@ -75,22 +71,18 @@ namespace AppCalisto.Controllers
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
-            {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "Product" });
-            }
 
             var product = await _productRepository.GetByIdAsync(id.Value);
             if (product == null)
-            {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "Product" });
-            }
 
             return View(new ProductViewModel
             {
                 Id = product.Id,
                 Name = product.Name,
-                Price = product.Price,
-                Tax = product.Tax
+                BasePrice = product.BasePrice,
+                TaxRate = product.TaxRate
             });
         }
 
@@ -106,19 +98,17 @@ namespace AppCalisto.Controllers
 
             var product = await _productRepository.GetByIdAsync(model.Id);
             if (product == null)
-            {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "Product" });
-            }
 
-            if (product.Name == model.Name && product.Price == model.Price && product.Tax == model.Tax)
+            if (product.Name == model.Name && product.BasePrice == model.BasePrice && product.TaxRate == model.TaxRate)
             {
                 TempData["Failure"] = "No changes were found.";
                 return View(model);
             }
 
             product.Name = model.Name;
-            product.Price = model.Price;
-            product.Tax = model.Tax;
+            product.BasePrice = model.BasePrice;
+            product.TaxRate = model.TaxRate;
 
             if (!await _productRepository.UpdateAsync(product))
             {
@@ -136,9 +126,7 @@ namespace AppCalisto.Controllers
         {
             var product = await _productRepository.GetByIdAsync(id);
             if (product == null)
-            {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "Product" });
-            }
 
             var existingProducts = await _productRepository.GetAllAsync();
             if (existingProducts.Count == 1)

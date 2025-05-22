@@ -23,7 +23,7 @@ namespace AppCalisto.Models
         public string Phone { get; set; }
 
         [MaxLength(15)]
-        public string Tax { get; set; }
+        public string Tin { get; set; }
 
         public ICollection<Order> Orders { get; set; }
     }

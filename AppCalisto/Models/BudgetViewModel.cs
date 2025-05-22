@@ -1,7 +1,7 @@
-﻿using AppCalisto.Data.Entities;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 
 namespace AppCalisto.Models
 {
@@ -9,21 +9,12 @@ namespace AppCalisto.Models
     {
         public int Id { get; set; }
 
-        [MaxLength(299)]
-        public string Description { get; set; }
-
-        public Order Order { get; set; }
-
-        [Required]
         public int OrderId { get; set; }
 
         [Required(ErrorMessage = "At least one product must be selected.")]
-        public List<int> ProductIds { get; set; }
+        public List<ItemViewModel> Items { get; set; } = new();
 
-        public List<BudgetProductViewModel> Products { get; set; }
-
-        public IEnumerable<SelectListItem> SelectableProducts { get; set; }
-
-        public string Status { get; set; }
+        [NotMapped]
+        public decimal Total => Items?.Sum(i => i.Total) ?? 0m;
     }
 }

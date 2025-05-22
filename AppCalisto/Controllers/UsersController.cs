@@ -32,9 +32,7 @@ namespace AppCalisto.Controllers
         {
             var users = await _userRepository.GetAllAsync();
             foreach (var user in users)
-            {
                 user.Roles = (await _userRepository.GetRolesAsync(user)).ToList();
-            }
 
             return View(users);
         }
@@ -47,8 +45,7 @@ namespace AppCalisto.Controllers
             });
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+        [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(UserViewModel model)
         {
             if (!ModelState.IsValid)
@@ -127,15 +124,11 @@ namespace AppCalisto.Controllers
         public async Task<IActionResult> Details(string id)
         {
             if (string.IsNullOrEmpty(id))
-            {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
-            }
 
             var user = await _userRepository.GetByIdAsync(id);
             if (user == null)
-            {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
-            }
 
             user.Roles = (await _userRepository.GetRolesAsync(user)).ToList();
             return View(user);
@@ -157,26 +150,18 @@ namespace AppCalisto.Controllers
         public async Task<IActionResult> Edit(string id)
         {
             if (string.IsNullOrEmpty(id))
-            {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
-            }
 
             var user = await _userRepository.GetByIdAsync(id);
             if (user == null)
-            {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
-            }
 
             if (user.Email == "admin@mail")
-            {
                 return RedirectToAction("Unauthorized401", "Errors");
-            }
 
             user.Roles = (await _userRepository.GetRolesAsync(user) ?? new List<string>()).ToList();
             if (user.Roles.Contains("Admin") && User.Identity.Name != "admin@mail")
-            {
                 return RedirectToAction("Unauthorized401", "Errors");
-            }
 
             return View(await BuildEditUserViewModelAsync(user));
         }
@@ -187,9 +172,7 @@ namespace AppCalisto.Controllers
         {
             var user = await _userRepository.GetByIdAsync(model.Id);
             if (user == null)
-            {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
-            }
 
             if (!ModelState.IsValid)
             {
@@ -244,24 +227,16 @@ namespace AppCalisto.Controllers
         public async Task<IActionResult> Deactivate(string id)
         {
             if (string.IsNullOrEmpty(id))
-            {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
-            }
 
             var user = await _userRepository.GetByIdAsync(id);
             if (user == null)
-            {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
-            }
 
             if (await _userRepository.LockOutAsync(user) != IdentityResult.Success)
-            {
                 TempData["Failure"] = "Could not deactivate user.";
-            }
             else
-            {
                 TempData["Success"] = "User deactivated successfully.";
-            }
 
             return RedirectToAction("Edit", new { id });
         }
@@ -271,24 +246,16 @@ namespace AppCalisto.Controllers
         public async Task<IActionResult> Reactivate(string id)
         {
             if (string.IsNullOrEmpty(id))
-            {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
-            }
 
             var user = await _userRepository.GetByIdAsync(id);
             if (user == null)
-            {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
-            }
 
             if (await _userRepository.UnlockAsync(user) != IdentityResult.Success)
-            {
                 TempData["Failure"] = "Could not reactivate user.";
-            }
             else
-            {
                 TempData["Success"] = "User reactivated successfully.";
-            }
 
             return RedirectToAction("Edit", new { id });
         }

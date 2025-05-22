@@ -34,7 +34,7 @@ namespace AppCalisto.Data.Repositories
         public async Task<Client> GetByTaxAsync(string tax)
         {
             return await _context.Clients.Include(c => c.Orders).ThenInclude(o => o.Service).ThenInclude(s => s.Company).Include(c => c.Orders).ThenInclude(o => o.Technician)
-                .FirstOrDefaultAsync(c => c.Tax == tax);
+                .FirstOrDefaultAsync(c => c.Tin == tax);
         }
     }
 }

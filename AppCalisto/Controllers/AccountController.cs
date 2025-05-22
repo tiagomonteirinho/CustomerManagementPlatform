@@ -23,9 +23,7 @@ namespace AppCalisto.Controllers
         public IActionResult Login()
         {
             if (User.Identity.IsAuthenticated)
-            {
                 return RedirectToAction("Index", "Home");
-            }
 
             return View();
         }
@@ -81,9 +79,7 @@ namespace AppCalisto.Controllers
 
             var user = await _userRepository.GetByEmailAsync(User.Identity.Name);
             if (user == null)
-            {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
-            }
 
             var result = await _userRepository.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
             if (result.Succeeded)
@@ -99,9 +95,7 @@ namespace AppCalisto.Controllers
         public IActionResult SendPasswordResetEmail()
         {
             if (User.Identity.IsAuthenticated)
-            {
                 _userRepository.LogoutAsync();
-            }
 
             return View();
         }
@@ -111,9 +105,7 @@ namespace AppCalisto.Controllers
         public async Task<IActionResult> SendPasswordResetEmail(SendPasswordSetEmailViewModel model)
         {
             if (!ModelState.IsValid)
-            {
                 return View(model);
-            }
 
             var user = await _userRepository.GetByEmailAsync(model.Email);
             if (user == null)
@@ -172,9 +164,7 @@ namespace AppCalisto.Controllers
         public IActionResult SetPassword(string id, string passwordSetToken, string emailConfirmationToken)
         {
             if (User.Identity.IsAuthenticated)
-            {
                 _userRepository.LogoutAsync();
-            }
 
             return View(new SetPasswordViewModel
             {
@@ -190,17 +180,13 @@ namespace AppCalisto.Controllers
         {
             var user = await _userRepository.GetByIdAsync(model.Id);
             if (user == null)
-            {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
-            }
 
             if (!string.IsNullOrEmpty(model.EmailConfirmationToken))
             {
                 var confirmEmail = await _userRepository.ConfirmEmailAsync(user, model.EmailConfirmationToken);
                 if (!confirmEmail.Succeeded)
-                {
                     return RedirectToAction("NotFound404", "Errors");
-                }
             }
 
             if (await _userRepository.SetPasswordAsync(user, model.PasswordSetToken, model.NewPassword) != IdentityResult.Success)

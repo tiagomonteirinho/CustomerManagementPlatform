@@ -46,13 +46,13 @@
                                             <a class="nav-link text-dark" asp-controller="Clients" asp-action="Index">Clients</a>
                                         </li>
                                         <li class="nav-item">
-                                            <a class="nav-link text-dark" asp-controller="Orders" asp-action="Index">Orders</a>
-                                        </li>
-                                        <li class="nav-item">
                                             <a class="nav-link text-dark" asp-controller="Products" asp-action="Index">Products</a>
                                         </li>
                                         <li class="nav-item">
-                                            <a class="nav-link text-dark" asp-controller="Budgets" asp-action="Index">Budgets</a>
+                                            <a class="nav-link text-dark" asp-controller="Orders" asp-action="Index">Orders</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link text-dark" asp-controller="Appointments" asp-action="Index">Appointments</a>
                                         </li>
                                     </ul>
                                 </li>
@@ -60,13 +60,13 @@
                             @if (User.IsInRole("Technician"))
                             {
                                 <li class="nav-item dropdown">
-                                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownBackoffice" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Technician</a>
-                                    <ul class="dropdown-menu" aria-labelledby="navbarDropdownBackoffice">
+                                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownTechnician" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Technician</a>
+                                    <ul class="dropdown-menu" aria-labelledby="navbarDropdownTechnician">
                                         <li class="nav-item">
                                             <a class="nav-link text-dark" asp-controller="Orders" asp-action="IndexTechnicianOrders">Orders</a>
                                         </li>
                                         <li class="nav-item">
-                                            <a class="nav-link text-dark" asp-controller="Budgets" asp-action="IndexTechnicianBudgets">Budgets</a>
+                                            <a class="nav-link text-dark" asp-controller="Appointments" asp-action="IndexTechnicianAppointments">Appointments</a>
                                         </li>
                                     </ul>
                                 </li>
@@ -78,8 +78,8 @@
                                     var user = await _userRepository.GetByEmailAsync(User.Identity.Name);
                                     var userName = user.Name.Length > 25 ? user.Name.Substring(0, 25) + "..." : user.Name;
                                 }
-                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">@userName</a>
-                                <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownAccount" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">@userName</a>
+                                <ul class="dropdown-menu" aria-labelledby="navbarDropdownAccount">
                                     <li class="nav-item">
                                         <a class="nav-link text-dark" asp-controller="Account" asp-action="ChangePassword">Change password</a>
                                     </li>

@@ -1,29 +1,21 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 
 namespace AppCalisto.Data.Entities
 {
     public class Budget
     {
-        [Required]
         public int Id { get; set; }
-
-        [MaxLength(299)]
-        public string Description { get; set; }
-
-        public Order Order { get; set; }
 
         [Required]
         public int OrderId { get; set; }
+        public Order Order { get; set; }
 
-        public ICollection<BudgetProduct> BudgetProducts { get; set; } = new List<BudgetProduct>();
+        public ICollection<Item> Items { get; set; } = new List<Item>();
 
         [NotMapped]
-        public List<int> ProductIds { get; set; } = new();
-
-        public decimal Total { get; set; }
-
-        public string Status { get; set; }
+        public decimal Total => Items?.Sum(i => i.Total) ?? 0m;
     }
 }

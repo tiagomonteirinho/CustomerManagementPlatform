@@ -29,14 +29,14 @@
                 <span asp-validation-for="Name" class="text-warning"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Price">Price</label>
-                <input asp-for="Price" class="form-control" type="number" min="0" />
-                <span asp-validation-for="Price" class="text-warning"></span>
+                <label asp-for="BasePrice">Base Price</label>
+                <input asp-for="BasePrice" class="form-control" type="number" min="0" />
+                <span asp-validation-for="BasePrice" class="text-warning"></span>
             </div>
             <div class="form-group">
-                <label asp-for="Tax">Tax</label>
-                <select asp-for="Tax" asp-items="Model.SelectableTaxes" class="form-control"></select>
-                <span asp-validation-for="Tax" class="text-warning"></span>
+                <label asp-for="TaxRate">Tax Rate</label>
+                <select asp-for="TaxRate" asp-items="Model.SelectableTaxes" class="form-control"></select>
+                <span asp-validation-for="TaxRate" class="text-warning"></span>
             </div>
 
             <div class="form-group">

@@ -18,14 +18,18 @@ namespace AppCalisto.Controllers
         private readonly ICompanyRepository _companyRepository;
         private readonly IServiceRepository _serviceRepository;
         private readonly IUserRepository _userRepository;
+        private readonly IObservationRepository _observationRepository;
+        private readonly IBudgetRepository _budgetRepository;
 
-        public OrdersController(IOrderRepository orderRepository, IClientRepository clientRepository, ICompanyRepository companyRepository, IServiceRepository serviceRepository, IUserRepository userRepository)
+        public OrdersController(IOrderRepository orderRepository, IClientRepository clientRepository, ICompanyRepository companyRepository, IServiceRepository serviceRepository, IUserRepository userRepository, IObservationRepository observationRepository, IBudgetRepository budgetRepository)
         {
             _orderRepository = orderRepository;
             _clientRepository = clientRepository;
             _companyRepository = companyRepository;
             _serviceRepository = serviceRepository;
             _userRepository = userRepository;
+            _observationRepository = observationRepository;
+            _budgetRepository = budgetRepository;
         }
 
         public IActionResult GetCompanyServices(int companyId)
@@ -45,11 +49,9 @@ namespace AppCalisto.Controllers
         {
             var technician = await _userRepository.GetByEmailAsync(User.Identity.Name);
             if (technician == null)
-            {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
-            }
 
-            return View(await _orderRepository.GetByTechnicianAsync(technician));
+            return View(await _orderRepository.GetByTechnicianIdAsync(technician.Id));
         }
 
         private async Task<OrderViewModel> BuildCreateOrderViewModelAsync(int clientId)
@@ -58,7 +60,6 @@ namespace AppCalisto.Controllers
             {
                 ClientId = clientId,
                 Creation = DateTime.Now,
-                Appointment = DateTime.Now,
                 SelectableCompanies = _companyRepository.GetAll() ?? new List<SelectListItem>(),
                 SelectableServices = _companyRepository.GetServices(0) ?? new List<SelectListItem>(),
                 SelectableTechnicians = await _userRepository.GetAllByRoleAsync("Technician") ?? new List<SelectListItem>()
@@ -69,15 +70,11 @@ namespace AppCalisto.Controllers
         public async Task<IActionResult> Create(int? clientId)
         {
             if (clientId == null)
-            {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "Client" });
-            }
 
             var client = await _clientRepository.GetByIdAsync(clientId.Value);
             if (client == null)
-            {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "Client" });
-            }
 
             return View(await BuildCreateOrderViewModelAsync(clientId.Value));
         }
@@ -95,10 +92,7 @@ namespace AppCalisto.Controllers
 
             var order = new Order()
             {
-                Appointment = model.Appointment,
                 IsUrgent = model.IsUrgent,
-                Location = model.Location,
-                Description = model.Description,
                 ClientId = model.ClientId,
                 ServiceId = model.ServiceId,
                 TechnicianId = model.TechnicianId
@@ -112,6 +106,20 @@ namespace AppCalisto.Controllers
                 return View(await BuildCreateOrderViewModelAsync(model.ClientId));
             }
 
+            var observation = new Observation { OrderId = order.Id };
+            await _observationRepository.CreateAsync(observation);
+
+            var budget = new Budget { OrderId = order.Id };
+            await _budgetRepository.CreateAsync(budget);
+
+            order.Observation = observation;
+            order.Budget = budget;
+            if (!await _orderRepository.UpdateAsync(order))
+            {
+                TempData["Failure"] = "Could not create order.";
+                return View(await BuildCreateOrderViewModelAsync(model.ClientId));
+            }
+
             TempData["Success"] = "Order created successfully!";
             return RedirectToAction("Create", new { clientId = model.ClientId });
         }
@@ -120,15 +128,11 @@ namespace AppCalisto.Controllers
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
-            {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "Order" });
-            }
 
             var order = await _orderRepository.GetByIdAsync(id.Value);
             if (order == null)
-            {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "Order" });
-            }
 
             return View(order);
         }
@@ -137,20 +141,14 @@ namespace AppCalisto.Controllers
         public async Task<IActionResult> DetailTechnicianOrder(int? id)
         {
             if (id == null)
-            {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "Order" });
-            }
 
             var order = await _orderRepository.GetByIdAsync(id.Value);
             if (order == null)
-            {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "Order" });
-            }
 
             if (order.Technician.Email != User.Identity.Name)
-            {
                 return RedirectToAction("Unauthorized401", "Errors");
-            }
 
             return View(order);
         }
@@ -160,12 +158,6 @@ namespace AppCalisto.Controllers
             return new OrderViewModel
             {
                 Id = order.Id,
-                Creation = order.Creation,
-                Execution = order.Execution,
-                Appointment = order.Appointment,
-                IsUrgent = order.IsUrgent,
-                Location = order.Location,
-                Description = order.Description,
                 ClientId = order.ClientId,
                 CompanyId = order.Service.CompanyId,
                 SelectableCompanies = _companyRepository.GetAll() ?? new List<SelectListItem>(),
@@ -180,15 +172,11 @@ namespace AppCalisto.Controllers
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
-            {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "Order" });
-            }
 
             var order = await _orderRepository.GetByIdAsync(id.Value);
             if (order == null)
-            {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "Order" });
-            }
 
             return View(await BuildEditOrderViewModelAsync(order));
         }
@@ -200,9 +188,7 @@ namespace AppCalisto.Controllers
         {
             var order = await _orderRepository.GetByIdAsync(model.Id);
             if (order == null)
-            {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "Order" });
-            }
 
             if (!ModelState.IsValid)
             {
@@ -210,8 +196,7 @@ namespace AppCalisto.Controllers
                 return View(await BuildEditOrderViewModelAsync(order));
             }
 
-            if (order.Execution == model.Execution && order.Appointment == model.Appointment && order.IsUrgent == model.IsUrgent && order.Location == model.Location && order.Description == model.Description
-                && order.ServiceId == model.ServiceId && order.TechnicianId == model.TechnicianId)
+            if (order.IsUrgent == model.IsUrgent && order.ServiceId == model.ServiceId && order.TechnicianId == model.TechnicianId)
             {
                 TempData["Failure"] = "No changes were found.";
                 return View(await BuildEditOrderViewModelAsync(order));
@@ -220,11 +205,7 @@ namespace AppCalisto.Controllers
             order.ClientId = model.ClientId;
             order.ServiceId = model.ServiceId;
             order.TechnicianId = model.TechnicianId;
-            order.Execution = model.Execution;
-            order.Appointment = model.Appointment;
             order.IsUrgent = model.IsUrgent;
-            order.Location = model.Location;
-            order.Description = model.Description;
 
             if (!await _orderRepository.UpdateAsync(order))
             {
@@ -243,9 +224,7 @@ namespace AppCalisto.Controllers
         {
             var order = await _orderRepository.GetByIdAsync(id);
             if (order == null)
-            {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "Order" });
-            }
 
             var existingOrders = await _orderRepository.GetAllAsync();
             if (existingOrders.Count == 1)

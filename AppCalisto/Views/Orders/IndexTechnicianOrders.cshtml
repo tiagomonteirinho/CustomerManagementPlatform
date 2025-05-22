@@ -24,17 +24,15 @@
     <div class="col-md-12">
         <div class="card">
             <div class="card-body">
-                <table class="table table-hover table-responsive" id="MyTable">
-                    <thead>
+                <table class="table table-hover table-responsive-lg" id="MyTable">
+                    <thead class="thead-light">
                         <tr>
                             <th>Number</th>
                             <th>Client</th>
                             <th>Company</th>
                             <th>Service</th>
-                            <th>Created</th>
+                            <th>Creation time</th>
                             <th>Urgent</th>
-                            <th>Appointment</th>
-                            <th>Location</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -46,17 +44,10 @@
                                 <td>@item.Client.Name</td>
                                 <td>@item.Service.Company.Abbreviation</td>
                                 <td>@item.Service.Abbreviation</td>
-                                <td>@item.Creation</td>
+                                <td>@item.CreationTime</td>
                                 <td>@(item.IsUrgent ? "Yes" : "No")</td>
                                 <td>
-                                    @if (item.Appointment > item.Creation)
-                                    {
-                                        @item.Appointment
-                                    }
-                                </td>
-                                <td>@item.Location</td>
-                                <td>
-                                    <a asp-controller="Budgets" asp-action="Create" asp-route-OrderId="@item.Id" class="btn btn-sm btn-primary">Add new budget</a>
+                                    <a asp-controller="Appointments" asp-action="Create" asp-route-OrderId="@item.Id" class="btn btn-sm btn-primary">Add new appointment</a>
                                     <a asp-action="DetailTechnicianOrder" asp-route-Id="@item.Id" class="btn btn-sm btn-info">Details</a>
                                 </td>
                             </tr>

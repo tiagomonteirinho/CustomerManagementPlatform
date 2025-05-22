@@ -1,0 +1,45 @@
+﻿@model AppCalisto.Models.ObservationViewModel;
+@{
+    ViewData["Title"] = "Edit observation";
+}
+
+<h2>Observation #@Model.Id.ToString("D4")</h2>
+<hr />
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["Success"]
+    </div>
+}
+@if (TempData["Failure"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["Failure"]
+    </div>
+}
+
+<div class="row">
+    <div class="col-md-4 offset-md-4">
+        <form method="post">
+            <div asp-validation-summary="ModelOnly"></div>
+            <input type="hidden" asp-for="OrderId" />
+
+            <div class="form-group">
+                <label asp-for="Description">Description</label>
+                <textarea asp-for="Description" class="form-control" rows="3" maxlength="299"></textarea>
+                <span asp-validation-for="Description" class="text-warning"></span>
+            </div>
+
+            <div class="form-group">
+                <input type="submit" value="Save changes" class="btn btn-primary" />
+                <a asp-controller="Orders" asp-action="Details" asp-route-Id="@Model.OrderId" class="btn btn-secondary">Back to details</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

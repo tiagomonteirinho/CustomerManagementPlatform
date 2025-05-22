@@ -17,17 +17,34 @@ namespace AppCalisto.Data.Repositories
 
         public async Task<List<Order>> GetAllAsync()
         {
-            return await _context.Orders.AsNoTracking().Include(o => o.Client).Include(o => o.Service).ThenInclude(s => s.Company).Include(o => o.Technician).ToListAsync();
-        }
-
-        public async Task<List<Order>> GetByTechnicianAsync(User technician)
-        {
-            return await _context.Orders.AsNoTracking().Include(o => o.Client).Include(o => o.Service).ThenInclude(s => s.Company).Where(b => b.Technician == technician).ToListAsync();
+            return await _context.Orders.AsNoTracking()
+                .Include(o => o.Client)
+                .Include(o => o.Service).ThenInclude(s => s.Company)
+                .Include(o => o.Technician)
+                .ToListAsync();
         }
 
         public async Task<Order> GetByIdAsync(int id)
         {
-            return await _context.Orders.Include(o => o.Client).Include(o => o.Service).ThenInclude(s => s.Company).Include(o => o.Technician).Include(o => o.Budgets).FirstOrDefaultAsync(o => o.Id == id);
+            return await _context.Orders
+                .Include(o => o.Client)
+                .Include(o => o.Service).ThenInclude(s => s.Company)
+                .Include(o => o.Technician)
+                .Include(o => o.Observation)
+                .Include(o => o.Budget).ThenInclude(b => b.Items).ThenInclude(i => i.Product)
+                .Include(o => o.Appointments)
+                .FirstOrDefaultAsync(o => o.Id == id);
+        }
+
+        public async Task<List<Order>> GetByTechnicianIdAsync(string technicianId)
+        {
+            return await _context.Orders.AsNoTracking().Include(o => o.Client)
+                .Include(o => o.Service).ThenInclude(s => s.Company)
+                .Include(o => o.Technician)
+                .Include(o => o.Observation)
+                .Include(o => o.Budget).ThenInclude(b => b.Items).ThenInclude(i => i.Product)
+                .Include(o => o.Appointments)
+                .Where(o => o.TechnicianId == technicianId).ToListAsync();
         }
     }
 }

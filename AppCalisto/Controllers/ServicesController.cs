@@ -27,15 +27,11 @@ namespace AppCalisto.Controllers
         public async Task<IActionResult> Create(int? companyId)
         {
             if (companyId == null)
-            {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "Company" });
-            }
 
             var company = await _companyRepository.GetByIdAsync(companyId.Value);
             if (company == null)
-            {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "Company" });
-            }
 
             return View(new ServiceViewModel
             {
@@ -71,7 +67,7 @@ namespace AppCalisto.Controllers
 
             await _serviceRepository.CreateAsync(service);
             var createdService = await _serviceRepository.GetByIdAsync(service.Id);
-            if (service == null)
+            if (createdService == null)
             {
                 TempData["Failure"] = "Could not create service.";
                 return View(model);
@@ -84,15 +80,11 @@ namespace AppCalisto.Controllers
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
-            {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "Service" });
-            }
 
             var service = await _serviceRepository.GetByIdAsync(id.Value);
             if (service == null)
-            {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "Service" });
-            }
 
             return View(service);
         }
@@ -100,15 +92,11 @@ namespace AppCalisto.Controllers
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
-            {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "Service" });
-            }
 
             var service = await _serviceRepository.GetByIdAsync(id.Value);
             if (service == null)
-            {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "Service" });
-            }
 
             return View(new ServiceViewModel
             {
@@ -131,9 +119,7 @@ namespace AppCalisto.Controllers
 
             var service = await _serviceRepository.GetByIdAsync(model.Id);
             if (service == null)
-            {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "Service" });
-            }
 
             if (service.Abbreviation == model.Abbreviation && service.Name == model.Name)
             {
@@ -170,9 +156,7 @@ namespace AppCalisto.Controllers
         {
             var service = await _serviceRepository.GetByIdAsync(id);
             if (service == null)
-            {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "Service" });
-            }
 
             var existingServices = await _serviceRepository.GetAllAsync();
             if (existingServices.Count == 1)

@@ -8,8 +8,8 @@ namespace AppCalisto.Data.Repositories
     {
         Task<List<Budget>> GetAllAsync();
 
-        Task<List<Budget>> GetByTechnicianAsync(User technician);
-
         Task<Budget> GetByIdAsync(int id);
+
+        Task<Budget> GetByOrderIdAsync(int orderId);
     }
 }

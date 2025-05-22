@@ -12,16 +12,10 @@ namespace AppCalisto.Models
 
         public DateTime Creation { get; set; }
 
-        public DateTime Execution { get; set; }
-
-        public DateTime Appointment { get; set; }
-
         public bool IsUrgent { get; set; }
 
-        public string Location { get; set; }
-
         [MaxLength(299)]
-        public string Description { get; set; }
+        public string ClientDescription { get; set; }
 
         public Client Client { get; set; }
 

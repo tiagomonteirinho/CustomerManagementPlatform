@@ -28,17 +28,15 @@
     <div class="col-md-12">
         <div class="card">
             <div class="card-body">
-                <table class="table table-hover table-responsive" id="MyTable">
+                <table class="table table-hover table-responsive-lg" id="MyTable">
                     <thead>
                         <tr>
                             <th>Number</th>
                             <th>Client</th>
                             <th>Service</th>
                             <th>Technician</th>
-                            <th>Created</th>
+                            <th>Creation time</th>
                             <th>Urgent</th>
-                            <th>Appointment</th>
-                            <th>Location</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -56,18 +54,12 @@
                                 <td>
                                     <a asp-controller="Users" asp-action="Details" asp-route-Id="@item.TechnicianId">@item.Technician.Name</a>
                                 </td>
-                                <td>@item.Creation</td>
+                                <td>@item.CreationTime</td>
                                 <td>
                                     @(item.IsUrgent ? "Yes" : "No")
                                 </td>
                                 <td>
-                                    @if (item.Appointment > item.Creation)
-                                    {
-                                        @item.Appointment
-                                    }
-                                </td>
-                                <td>@item.Location</td>
-                                <td>
+                                    <a asp-controller="Appointments" asp-action="Create" asp-route-OrderId="@item.Id" class="btn btn-sm btn-primary">Add new appointment</a>
                                     <a asp-action="Details" asp-route-Id="@item.Id" class="btn btn-sm btn-info">Details</a>
                                 </td>
                             </tr>

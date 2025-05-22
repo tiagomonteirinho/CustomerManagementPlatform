@@ -36,7 +36,7 @@
                             <th>Contact person</th>
                             <th>Email</th>
                             <th>Phone</th>
-                            <th>Tax</th>
+                            <th>TIN</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -49,7 +49,7 @@
                                 <td>@item.ContactPerson</td>
                                 <td>@item.Email</td>
                                 <td>@item.Phone</td>
-                                <td>@item.Tax</td>
+                                <td>@item.Tin</td>
                                 <td>
                                     <a asp-controller="Orders" asp-action="Create" asp-route-ClientId="@item.Id" class="btn btn-sm btn-primary">Add new order</a>
                                     <a asp-action="Details" asp-route-Id="@item.Id" class="btn btn-sm btn-info">Details</a>
