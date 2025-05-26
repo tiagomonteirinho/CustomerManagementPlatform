@@ -1,10 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace AppCalisto.Data.Entities
 {
     public class Observation
     {
-        [Required]
         public int Id { get; set; }
 
         [Required]
@@ -13,5 +13,7 @@ namespace AppCalisto.Data.Entities
 
         [MaxLength(299)]
         public string Description { get; set; }
+
+        public List<ObservationImage> Images { get; set; } = new();
     }
 }

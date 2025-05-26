@@ -1,4 +1,6 @@
 ﻿using AppCalisto.Data.Entities;
+using Microsoft.AspNetCore.Http;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace AppCalisto.Models
@@ -13,5 +15,8 @@ namespace AppCalisto.Models
 
         [MaxLength(299)]
         public string Description { get; set; }
+
+        public List<string> ExistingImageUrls { get; set; } = new();
+        public List<IFormFile> ImageFiles { get; set; } = new();
     }
 }

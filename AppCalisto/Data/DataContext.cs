@@ -39,6 +39,10 @@ namespace AppCalisto.Data
             modelBuilder.Entity<Observation>()
                 .Property(e => e.Id)
                 .UseIdentityColumn(seed: 1000, increment: 1);
+
+            modelBuilder.Entity<ObservationImage>()
+                .Property(e => e.Id)
+                .UseIdentityColumn(seed: 1000, increment: 1);
         }
 
         public DataContext(DbContextOptions<DataContext> options) : base(options)
@@ -56,6 +60,8 @@ namespace AppCalisto.Data
         public DbSet<Appointment> Appointments { get; set; }
 
         public DbSet<Observation> Observations { get; set; }
+
+        public DbSet<ObservationImage> ObservationImages { get; set; }
 
         public DbSet<Budget> Budgets { get; set; }
 

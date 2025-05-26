@@ -84,9 +84,7 @@ namespace AppCalisto.Controllers
                 StartTime = model.StartTime,
                 EndTime = model.EndTime,
                 OrderId = model.OrderId,
-                Order = model.Order,
-                TechnicianId = order.TechnicianId,
-                Technician = order.Technician
+                TechnicianId = order.TechnicianId
             };
 
             await _appointmentRepository.CreateAsync(appointment);

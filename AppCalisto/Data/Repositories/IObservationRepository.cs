@@ -9,5 +9,7 @@ namespace AppCalisto.Data.Repositories
         Task<List<Observation>> GetAllAsync();
 
         Task<Observation> GetByIdAsync(int id);
+
+        void DeleteImage(ObservationImage image);
     }
 }

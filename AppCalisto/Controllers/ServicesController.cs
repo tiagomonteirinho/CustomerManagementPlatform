@@ -127,14 +127,11 @@ namespace AppCalisto.Controllers
                 return View(model);
             }
 
-            if (model.Abbreviation != service.Abbreviation)
+            var existingServiceByAbbreviation = await _serviceRepository.GetByAbbreviationAsync(model.Abbreviation);
+            if (existingServiceByAbbreviation != null)
             {
-                var existingServiceByAbbreviation = await _serviceRepository.GetByAbbreviationAsync(model.Abbreviation);
-                if (existingServiceByAbbreviation != null)
-                {
-                    TempData["Failure"] = "That abbreviation is already being used.";
-                    return View(model);
-                }
+                TempData["Failure"] = "That abbreviation is already being used.";
+                return View(model);
             }
 
             service.Abbreviation = model.Abbreviation;

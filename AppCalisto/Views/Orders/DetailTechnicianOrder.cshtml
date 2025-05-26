@@ -78,7 +78,7 @@
         </div>
     }
 </div>
-<br />
+<hr />
 
 <div class="form-group d-flex align-items-center justify-content-between">
     <h3>Observation</h3>
@@ -91,8 +91,27 @@
 <div id="observationSection">
     <h4>Technician Description:</h4>
     <h5>@Html.Raw(Model.Observation.Description?.Replace("\n", "<br />"))</h5>
+    <br />
+    <h4>Images:</h4>
+    @if (Model.Observation.Images == null || !Model.Observation.Images.Any())
+    {
+        <div class="alert alert-warning">This observation does not contain any images.</div>
+    }
+    else
+    {
+        <div>
+            @foreach (var image in Model.Observation.Images)
+            {
+                <div class="d-inline-block position-relative m-1">
+                    <a href="@Url.Content(image.Url)" target="_blank">
+                        <img src="@Url.Content(image.Url)" alt="Image" width="150" class="img-thumbnail" />
+                    </a>
+                </div>
+            }
+        </div>
+    }
 </div>
-<br />
+<hr />
 
 <div class="form-group d-flex align-items-center justify-content-between">
     <h3>Budget</h3>
@@ -110,6 +129,7 @@
         </strong>
     </h4>
     <br />
+    <h4>Products:</h4>
     @if (Model.Budget.Items == null || !Model.Budget.Items.Any())
     {
         <div class="alert alert-warning">This budget does not contain any products.</div>
@@ -147,7 +167,6 @@
         </div>
     }
 </div>
-<br />
 
 @section Scripts {
     <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
