@@ -57,4 +57,62 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+
+    @* Service selection *@
+    <script>
+        $(document).ready(function () {
+            var $companyDropdown = $('#companyDropdown');
+            var $serviceDropdown = $('#serviceDropdown');
+            var $serviceForm = $('#serviceForm');
+            var currentServiceId = '@Model.ServiceId';
+
+            function loadServices(companyId, preselectServiceId) {
+                $serviceDropdown.empty();
+
+                if (companyId) {
+                    $serviceForm.show();
+                    $.ajax({
+                        url: '/Orders/GetCompanyServices',
+                        type: 'GET',
+                        data: { companyId: companyId },
+                        success: function (data) {
+                            $.each(data, function (i, item) {
+                                var option = $('<option>', {
+                                    value: item.value,
+                                    text: item.text
+                                });
+
+                                if (item.value == preselectServiceId) {
+                                    option.prop('selected', true);
+                                }
+
+                                $serviceDropdown.append(option);
+                            });
+                        },
+                        error: function () {
+                            alert('Error loading services. Please try again.');
+                        }
+                    });
+                } else {
+                    $serviceForm.hide();
+                }
+            }
+
+            // Initial check.
+            var initialCompanyId = $companyDropdown.val();
+            if (initialCompanyId) {
+                $serviceForm.show();
+                // Only reload via AJAX if services were NOT passed via model.
+                if ($serviceDropdown.children().length <= 1) {
+                    loadServices(initialCompanyId, currentServiceId);
+                }
+            }
+
+            // Update services dropdown on company change.
+            $companyDropdown.on('change', function () {
+                var selectedCompanyId = $(this).val();
+                loadServices(selectedCompanyId, null);
+            });
+        });
+    </script>
 }

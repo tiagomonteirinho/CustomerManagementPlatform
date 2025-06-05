@@ -4,12 +4,10 @@ namespace AppCalisto.Models
 {
     public class LoginViewModel
     {
-        [Required]
-        [EmailAddress]
+        [Required, EmailAddress]
         public string Email { get; set; }
 
-        [Required]
-        [MinLength(6)]
+        [Required, MinLength(6)]
         public string Password { get; set; }
 
         public bool RememberMe { get; set; }

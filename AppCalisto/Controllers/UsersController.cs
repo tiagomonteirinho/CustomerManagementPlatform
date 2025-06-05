@@ -101,7 +101,7 @@ namespace AppCalisto.Controllers
             string actionUrl = Url.Action
             (
                 "SetPassword",
-                "Users",
+                "Account",
                 new { id = user.Id, passwordSetToken, emailConfirmationToken },
                 protocol: HttpContext.Request.Scheme
             );
@@ -166,8 +166,7 @@ namespace AppCalisto.Controllers
             return View(await BuildEditUserViewModelAsync(user));
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+        [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(UserViewModel model)
         {
             var user = await _userRepository.GetByIdAsync(model.Id);
@@ -222,8 +221,7 @@ namespace AppCalisto.Controllers
             return RedirectToAction("Edit", new { id = user.Id });
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+        [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Deactivate(string id)
         {
             if (string.IsNullOrEmpty(id))
@@ -241,8 +239,7 @@ namespace AppCalisto.Controllers
             return RedirectToAction("Edit", new { id });
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+        [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Reactivate(string id)
         {
             if (string.IsNullOrEmpty(id))

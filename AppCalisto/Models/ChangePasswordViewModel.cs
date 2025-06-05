@@ -10,8 +10,7 @@ namespace AppCalisto.Models
         [Required]
         public string NewPassword { get; set; }
 
-        [Required]
-        [Compare("NewPassword")]
+        [Required, Compare("NewPassword")]
         public string ConfirmNewPassword { get; set; }
     }
 }

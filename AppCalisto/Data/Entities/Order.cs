@@ -13,25 +13,25 @@ namespace AppCalisto.Data.Entities
 
         public bool IsUrgent { get; set; }
 
+        [MaxLength(99)]
         public string Status { get; set; }
+
+        public bool IsClosed { get; set; }
 
         [MaxLength(299)]
         public string ClientDescription { get; set; }
 
+        [Required]
+        public int ClientId { get; set; }
         public Client Client { get; set; }
 
         [Required]
-        public int ClientId { get; set; }
-
+        public int ServiceId { get; set; }
         public Service Service { get; set; }
 
         [Required]
-        public int ServiceId { get; set; }
-
-        public User Technician { get; set; }
-
-        [Required]
         public string TechnicianId { get; set; }
+        public User Technician { get; set; }
 
         public Observation Observation { get; set; }
 

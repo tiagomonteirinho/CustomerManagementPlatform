@@ -4,6 +4,14 @@
 }
 
 <link rel="stylesheet" href="https://cdn.datatables.net/1.10.25/css/dataTables.bootstrap4.min.css" />
+<style>
+    td {
+        word-break: break-word;
+        word-wrap: break-word;
+        white-space: normal;
+        max-width: 299px;
+    }
+</style>
 
 <h2>All orders</h2>
 <br />
@@ -37,6 +45,7 @@
                             <th>Technician</th>
                             <th>Creation time</th>
                             <th>Urgent</th>
+                            <th>Status</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -57,6 +66,11 @@
                                 <td>@item.CreationTime</td>
                                 <td>
                                     @(item.IsUrgent ? "Yes" : "No")
+                                </td>
+                                <td>
+                                    @(item.IsClosed ? "Closed" : "Ongoing")
+                                    <br />
+                                    @item.Status
                                 </td>
                                 <td>
                                     <a asp-controller="Appointments" asp-action="Create" asp-route-OrderId="@item.Id" class="btn btn-sm btn-primary">Add new appointment</a>

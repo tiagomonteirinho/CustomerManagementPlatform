@@ -111,8 +111,8 @@ namespace AppCalisto.Data
             {
                 var seedClients = new List<Client>
                 {
-                    new Client { Name = "Client 1", ContactPerson = "Person 1", Email = "client@mail", Phone = "111111111", Tin = "111111111" },
-                    new Client { Name = "Client 2", ContactPerson = "Person 2", Email = "client2@mail", Phone = "222222222", Tin = "222222222" }
+                    new Client { Name = "Client 1", ContactPerson = "Person 1", Address = "Street 1, N1, Lisbon", ZipCode = "1234-567", Email = "client@mail", Phone = "111111111", Tin = "111111111" },
+                    new Client { Name = "Client 2", ContactPerson = "Person 2", Address = "Street 2, N2, Lisbon", ZipCode = "7654-321", Email = "client2@mail", Phone = "222222222", Tin = "222222222" }
                 };
 
                 await _context.Clients.AddRangeAsync(seedClients.AsEnumerable().Reverse());
@@ -214,8 +214,8 @@ namespace AppCalisto.Data
             {
                 var seedProducts = new List<Product>
                 {
-                    new Product { Name = "Product 1", BasePrice = 12.57M, TaxRate = 23 },
-                    new Product { Name = "Product 2", BasePrice = 43.09M, TaxRate = 6 }     
+                    new Product { ServiceId = 1, Name = "Product 1", BasePrice = 12.57M, TaxRate = 23 },
+                    new Product { ServiceId = 2, Name = "Product 2", BasePrice = 43.09M, TaxRate = 6 }     
                 };
 
                 _context.Products.AddRange(seedProducts.AsEnumerable().Reverse());

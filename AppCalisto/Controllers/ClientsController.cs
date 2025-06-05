@@ -27,8 +27,7 @@ namespace AppCalisto.Controllers
             return View(new ClientViewModel());
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+        [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(ClientViewModel model)
         {
             if (!ModelState.IsValid)
@@ -61,6 +60,8 @@ namespace AppCalisto.Controllers
             {
                 Name = model.Name,
                 ContactPerson = model.ContactPerson,
+                Address = model.Address,
+                ZipCode = model.ZipCode,
                 Email = model.Email,
                 Phone = model.Phone,
                 Tin = model.Tin
@@ -104,14 +105,15 @@ namespace AppCalisto.Controllers
                 Id = client.Id,
                 Name = client.Name,
                 ContactPerson = client.ContactPerson,
+                Address = client.Address,
+                ZipCode = client.ZipCode,
                 Email = client.Email,
                 Phone = client.Phone,
                 Tin = client.Tin
             });
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+        [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(ClientViewModel model)
         {
             if (!ModelState.IsValid)
@@ -166,8 +168,7 @@ namespace AppCalisto.Controllers
             return RedirectToAction("Edit");
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+        [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
             var client = await _clientRepository.GetByIdAsync(id);

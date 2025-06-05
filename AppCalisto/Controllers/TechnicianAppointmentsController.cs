@@ -7,14 +7,14 @@ using System.Threading.Tasks;
 
 namespace AppCalisto.Controllers
 {
-    [Authorize(Roles = "Back-office")]
-    public class AppointmentsController : Controller
+    [Authorize(Roles = "Technician")]
+    public class TechnicianAppointmentsController : Controller
     {
         private readonly IAppointmentRepository _appointmentRepository;
         private readonly IOrderRepository _orderRepository;
         private readonly IUserRepository _userRepository;
 
-        public AppointmentsController(IAppointmentRepository appointmentRepository, IOrderRepository orderRepository, IUserRepository userRepository)
+        public TechnicianAppointmentsController(IAppointmentRepository appointmentRepository, IOrderRepository orderRepository, IUserRepository userRepository)
         {
             _appointmentRepository = appointmentRepository;
             _orderRepository = orderRepository;
@@ -23,16 +23,20 @@ namespace AppCalisto.Controllers
 
         public async Task<IActionResult> Index()
         {
-            return View(await _appointmentRepository.GetAllAsync());
+            var technician = await _userRepository.GetByEmailAsync(User.Identity.Name);
+            if (technician == null)
+                return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
+
+            return View(await _appointmentRepository.GetByTechnicianIdAsync(technician.Id));
         }
 
         public async Task<IActionResult> Create(int? orderId)
         {
-            if (orderId == null) 
+            if (orderId == null)
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "Order" });
 
             var order = await _orderRepository.GetByIdAsync(orderId.Value);
-            if (order == null) 
+            if (order == null)
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "Order" });
 
             return View(new AppointmentViewModel
@@ -53,7 +57,7 @@ namespace AppCalisto.Controllers
             }
 
             var order = await _orderRepository.GetByIdAsync(model.OrderId);
-            if (order == null) 
+            if (order == null)
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "Order" });
 
             if (model.EndTime <= model.StartTime)
@@ -91,12 +95,15 @@ namespace AppCalisto.Controllers
 
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null) 
+            if (id == null)
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "Appointment" });
 
             var appointment = await _appointmentRepository.GetByIdAsync(id.Value);
-            if (appointment == null) 
+            if (appointment == null)
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "Appointment" });
+
+            if (appointment.Technician.Email != User.Identity.Name)
+                return RedirectToAction("Unauthorized401", "Errors");
 
             return View(appointment);
         }

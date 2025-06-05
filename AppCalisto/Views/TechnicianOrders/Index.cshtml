@@ -1,11 +1,11 @@
-﻿@model IEnumerable<AppCalisto.Data.Entities.Appointment>
+﻿@model IEnumerable<AppCalisto.Data.Entities.Order>
 @{
     ViewData["Title"] = "Index";
 }
 
 <link rel="stylesheet" href="https://cdn.datatables.net/1.10.25/css/dataTables.bootstrap4.min.css" />
 
-<h2>Appointments</h2>
+<h2>Orders</h2>
 <br />
 @if (TempData["Success"] != null)
 {
@@ -20,10 +20,6 @@
     </div>
 }
 
-<a asp-controller="Orders" asp-action="IndexTechnicianOrders" class="btn btn-primary">Create new appointment</a>
-<br />
-<br />
-
 <div class="row">
     <div class="col-md-12">
         <div class="card">
@@ -32,11 +28,11 @@
                     <thead class="thead-light">
                         <tr>
                             <th>Number</th>
-                            <th>Order</th>
-                            <th>Technician</th>
-                            <th>Location</th>
-                            <th>Start time</th>
-                            <th>End time</th>
+                            <th>Client</th>
+                            <th>Service</th>
+                            <th>Creation time</th>
+                            <th>Urgent</th>
+                            <th>Status</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -45,13 +41,18 @@
                         {
                             <tr>
                                 <td>@item.Id.ToString("D4")</td>
-                                <td>Order #@item.OrderId.ToString("D4")</td>
-                                <td>@item.Technician.Name</td>
-                                <td>@item.Location</td>
-                                <td>@item.StartTime.ToString("dd/MM/yyyy HH:mm")</td>
-                                <td>@item.EndTime.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>@item.Client.Name</td>
+                                <td>@item.Service.Abbreviation</td>
+                                <td>@item.CreationTime</td>
                                 <td>
-                                    <a asp-action="DetailTechnicianAppointment" asp-route-Id="@item.Id" class="btn btn-sm btn-info">Details</a>
+                                    @(item.IsClosed ? "Closed" : "Ongoing")
+                                    <br />
+                                    @item.Status
+                                </td>
+                                <td>@(item.IsUrgent ? "Yes" : "No")</td>
+                                <td>
+                                    <a asp-controller="TechnicianAppointments" asp-action="Create" asp-route-OrderId="@item.Id" class="btn btn-sm btn-primary">Add new appointment</a>
+                                    <a asp-action="Details" asp-route-Id="@item.Id" class="btn btn-sm btn-info">Details</a>
                                 </td>
                             </tr>
                         }

@@ -6,6 +6,10 @@ namespace AppCalisto.Data.Entities
     {
         public int Id { get; set; }
 
+        [Required]
+        public int ServiceId { get; set; }
+        public Service Service { get; set; }
+
         [Required, MaxLength(99)]
         public string Name { get; set; }
 

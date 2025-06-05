@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using AppCalisto.Data.Entities;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
@@ -7,6 +8,16 @@ namespace AppCalisto.Models
     public class ProductViewModel
     {
         public int Id { get; set; }
+
+        [Required(ErrorMessage = "The Company field is required.")]
+        public int CompanyId { get; set; }
+
+        public IEnumerable<SelectListItem> SelectableCompanies { get; set; }
+
+        [Required(ErrorMessage = "The Service field is required.")]
+        public int ServiceId { get; set; }
+        public Service Service { get; set; }
+        public IEnumerable<SelectListItem> SelectableServices { get; set; }
 
         [Required, MaxLength(99)]
         public string Name { get; set; }

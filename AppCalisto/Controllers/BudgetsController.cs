@@ -66,22 +66,23 @@ namespace AppCalisto.Controllers
             return View(new ItemViewModel
             {
                 OrderId = budget.OrderId,
-                SelectableProducts = await _productRepository.GetAllAsync() ?? new List<Product>()
+                Budget = budget,
+                SelectableProducts = await _productRepository.GetByServiceIdAsync(budget.Order.ServiceId) ?? new List<Product>()
             });
         }
 
         [HttpPost, Authorize(Roles = "Technician"), ValidateAntiForgeryToken]
         public async Task<IActionResult> AddProduct(ItemViewModel model)
         {
-            if (!ModelState.IsValid)
-            {
-                model.SelectableProducts = await _productRepository.GetAllAsync() ?? new List<Product>();
-                return View(model);
-            }
-
             var budget = await _budgetRepository.GetByOrderIdAsync(model.OrderId);
             if (budget == null)
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "Budget" });
+
+            if (!ModelState.IsValid)
+            {
+                model.SelectableProducts = await _productRepository.GetByServiceIdAsync(budget.Order.ServiceId) ?? new List<Product>();
+                return View(model);
+            }
 
             var product = await _productRepository.GetByIdAsync(model.ProductId);
             if (product == null)

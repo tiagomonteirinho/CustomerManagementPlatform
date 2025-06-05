@@ -10,8 +10,7 @@ namespace AppCalisto.Models
         [Required]
         public string Abbreviation { get; set; }
 
-        [Required]
-        [MaxLength(99)]
+        [Required, MaxLength(99)]
         public string Name { get; set; }
 
         public Company Company { get; set; }

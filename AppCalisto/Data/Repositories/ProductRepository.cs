@@ -18,12 +18,21 @@ namespace AppCalisto.Data.Repositories
 
         public async Task<List<Product>> GetAllAsync()
         {
-            return await _context.Products.AsNoTracking().ToListAsync();
+            return await _context.Products.AsNoTracking().Include(p => p.Service).ThenInclude(s => s.Company).ToListAsync();
+        }
+
+        public async Task<List<Product>> GetByServiceIdAsync(int serviceId)
+        {
+            return await _context.Products
+                .AsNoTracking()
+                .Include(p => p.Service).ThenInclude(s => s.Company)
+                .Where(p => p.ServiceId == serviceId)
+                .ToListAsync();
         }
 
         public async Task<Product> GetByIdAsync(int id)
         {
-            return await _context.Products.FirstOrDefaultAsync(p => p.Id == id);
+            return await _context.Products.Include(p => p.Service).ThenInclude(s => s.Company).FirstOrDefaultAsync(p => p.Id == id);
         }
 
         public IEnumerable<SelectListItem> GetAll()

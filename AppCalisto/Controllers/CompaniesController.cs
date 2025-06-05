@@ -27,8 +27,7 @@ namespace AppCalisto.Controllers
             return View(new CompanyViewModel());
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+        [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(CompanyViewModel model)
         {
             if (!ModelState.IsValid)
@@ -91,8 +90,7 @@ namespace AppCalisto.Controllers
             });
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+        [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(CompanyViewModel model)
         {
             if (!ModelState.IsValid)
@@ -134,8 +132,7 @@ namespace AppCalisto.Controllers
             return RedirectToAction("Edit");
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+        [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
             var company = await _companyRepository.GetByIdAsync(id);

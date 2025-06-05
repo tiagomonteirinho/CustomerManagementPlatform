@@ -10,6 +10,7 @@ namespace AppCalisto.Models
         public int Id { get; set; }
 
         public int BudgetId { get; set; }
+        public Budget Budget { get; set; }
 
         public int OrderId { get; set; }
 

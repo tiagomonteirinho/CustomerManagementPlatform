@@ -8,12 +8,10 @@ namespace AppCalisto.Data.Entities
         [Required]
         public int Id { get; set; }
 
-        [Required]
-        [MaxLength(5)]
+        [Required, MaxLength(5)]
         public string Abbreviation { get; set; }
 
-        [Required]
-        [MaxLength(99)]
+        [Required, MaxLength(99)]
         public string Name { get; set; }
 
         public ICollection<Service> Services { get; set; }

@@ -16,6 +16,10 @@
         <dd class="col-sm-10">@Model.Name</dd>
         <dt class="col-sm-2">Contact person</dt>
         <dd class="col-sm-10">@Model.ContactPerson</dd>
+        <dt class="col-sm-2">Address</dt>
+        <dd class="col-sm-10">@Model.Address</dd>
+        <dt class="col-sm-2">Zip code</dt>
+        <dd class="col-sm-10">@Model.ZipCode</dd>
         <dt class="col-sm-2">Email</dt>
         <dd class="col-sm-10">@Model.Email</dd>
         <dt class="col-sm-2">Phone</dt>
@@ -35,7 +39,7 @@
 </div>
 @if (Model.Orders == null || Model.Orders.Count == 0)
 {
-    <h5>This client does not contain any orders.</h5>
+    <div class="alert alert-warning">This client does not contain any orders.</div>
 }
 else
 {

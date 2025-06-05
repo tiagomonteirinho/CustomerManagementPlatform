@@ -1,11 +1,19 @@
-﻿@model IEnumerable<AppCalisto.Data.Entities.Order>
+﻿@model IEnumerable<AppCalisto.Data.Entities.Appointment>
 @{
     ViewData["Title"] = "Index";
 }
 
 <link rel="stylesheet" href="https://cdn.datatables.net/1.10.25/css/dataTables.bootstrap4.min.css" />
+<style>
+    td {
+        word-break: break-word;
+        word-wrap: break-word;
+        white-space: normal;
+        max-width: 300px;
+    }
+</style>
 
-<h2>Orders</h2>
+<h2>Appointments</h2>
 <br />
 @if (TempData["Success"] != null)
 {
@@ -20,6 +28,10 @@
     </div>
 }
 
+<a asp-controller="TechnicianOrders" asp-action="Index" class="btn btn-primary">Create new appointment</a>
+<br />
+<br />
+
 <div class="row">
     <div class="col-md-12">
         <div class="card">
@@ -28,11 +40,11 @@
                     <thead class="thead-light">
                         <tr>
                             <th>Number</th>
-                            <th>Client</th>
-                            <th>Company</th>
-                            <th>Service</th>
-                            <th>Creation time</th>
-                            <th>Urgent</th>
+                            <th>Order</th>
+                            <th>Technician</th>
+                            <th>Location</th>
+                            <th>Start time</th>
+                            <th>End time</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -41,14 +53,13 @@
                         {
                             <tr>
                                 <td>@item.Id.ToString("D4")</td>
-                                <td>@item.Client.Name</td>
-                                <td>@item.Service.Company.Abbreviation</td>
-                                <td>@item.Service.Abbreviation</td>
-                                <td>@item.CreationTime</td>
-                                <td>@(item.IsUrgent ? "Yes" : "No")</td>
+                                <td>Order #@item.OrderId.ToString("D4")</td>
+                                <td>@item.Technician.Name</td>
+                                <td>@item.Location</td>
+                                <td>@item.StartTime.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>@item.EndTime.ToString("dd/MM/yyyy HH:mm")</td>
                                 <td>
-                                    <a asp-controller="Appointments" asp-action="Create" asp-route-OrderId="@item.Id" class="btn btn-sm btn-primary">Add new appointment</a>
-                                    <a asp-action="DetailTechnicianOrder" asp-route-Id="@item.Id" class="btn btn-sm btn-info">Details</a>
+                                    <a asp-action="Details" asp-route-Id="@item.Id" class="btn btn-sm btn-info">Details</a>
                                 </td>
                             </tr>
                         }

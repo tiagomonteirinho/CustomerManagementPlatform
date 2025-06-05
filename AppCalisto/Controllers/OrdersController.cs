@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace AppCalisto.Controllers
 {
-    [Authorize(Roles = "Back-office, Technician")]
+    [Authorize(Roles = "Back-office")]
     public class OrdersController : Controller
     {
         private readonly IOrderRepository _orderRepository;
@@ -38,20 +38,9 @@ namespace AppCalisto.Controllers
             return Json(services);
         }
 
-        [Authorize(Roles = "Back-office")]
         public async Task<IActionResult> Index()
         {
             return View(await _orderRepository.GetAllAsync());
-        }
-
-        [Authorize(Roles = "Technician")]
-        public async Task<IActionResult> IndexTechnicianOrders()
-        {
-            var technician = await _userRepository.GetByEmailAsync(User.Identity.Name);
-            if (technician == null)
-                return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
-
-            return View(await _orderRepository.GetByTechnicianIdAsync(technician.Id));
         }
 
         private async Task<OrderViewModel> BuildCreateOrderViewModelAsync(int clientId)
@@ -66,7 +55,6 @@ namespace AppCalisto.Controllers
             };
         }
 
-        [Authorize(Roles = "Back-office")]
         public async Task<IActionResult> Create(int? clientId)
         {
             if (clientId == null)
@@ -79,9 +67,7 @@ namespace AppCalisto.Controllers
             return View(await BuildCreateOrderViewModelAsync(clientId.Value));
         }
 
-        [Authorize(Roles = "Back-office")]
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+        [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(OrderViewModel model)
         {
             if (!ModelState.IsValid)
@@ -124,7 +110,6 @@ namespace AppCalisto.Controllers
             return RedirectToAction("Create", new { clientId = model.ClientId });
         }
 
-        [Authorize(Roles = "Back-office")]
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -133,22 +118,6 @@ namespace AppCalisto.Controllers
             var order = await _orderRepository.GetByIdAsync(id.Value);
             if (order == null)
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "Order" });
-
-            return View(order);
-        }
-
-        [Authorize(Roles = "Technician")]
-        public async Task<IActionResult> DetailTechnicianOrder(int? id)
-        {
-            if (id == null)
-                return RedirectToAction("NotFound404", "Errors", new { entityName = "Order" });
-
-            var order = await _orderRepository.GetByIdAsync(id.Value);
-            if (order == null)
-                return RedirectToAction("NotFound404", "Errors", new { entityName = "Order" });
-
-            if (order.Technician.Email != User.Identity.Name)
-                return RedirectToAction("Unauthorized401", "Errors");
 
             return View(order);
         }
@@ -164,11 +133,14 @@ namespace AppCalisto.Controllers
                 ServiceId = order.ServiceId,
                 SelectableServices = _companyRepository.GetServices(order.Service.CompanyId) ?? new List<SelectListItem>(),
                 TechnicianId = order.TechnicianId,
-                SelectableTechnicians = await _userRepository.GetAllByRoleAsync("Technician") ?? new List<SelectListItem>()
+                SelectableTechnicians = await _userRepository.GetAllByRoleAsync("Technician") ?? new List<SelectListItem>(),
+                IsUrgent = order.IsUrgent,
+                IsClosed = order.IsClosed,
+                Status = order.Status,
+                ClientDescription = order.ClientDescription
             };
         }
 
-        [Authorize(Roles = "Back-office")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
@@ -181,9 +153,7 @@ namespace AppCalisto.Controllers
             return View(await BuildEditOrderViewModelAsync(order));
         }
 
-        [Authorize(Roles = "Back-office")]
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+        [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(OrderViewModel model)
         {
             var order = await _orderRepository.GetByIdAsync(model.Id);
@@ -196,7 +166,8 @@ namespace AppCalisto.Controllers
                 return View(await BuildEditOrderViewModelAsync(order));
             }
 
-            if (order.IsUrgent == model.IsUrgent && order.ServiceId == model.ServiceId && order.TechnicianId == model.TechnicianId)
+            if (order.ServiceId == model.ServiceId && order.TechnicianId == model.TechnicianId
+                && order.IsUrgent == model.IsUrgent && order.Status == model.Status && order.ClientDescription == model.ClientDescription)
             {
                 TempData["Failure"] = "No changes were found.";
                 return View(await BuildEditOrderViewModelAsync(order));
@@ -206,6 +177,8 @@ namespace AppCalisto.Controllers
             order.ServiceId = model.ServiceId;
             order.TechnicianId = model.TechnicianId;
             order.IsUrgent = model.IsUrgent;
+            order.Status = model.Status;
+            order.ClientDescription = model.ClientDescription;
 
             if (!await _orderRepository.UpdateAsync(order))
             {
@@ -214,12 +187,10 @@ namespace AppCalisto.Controllers
             };
 
             TempData["Success"] = "Order updated successfully.";
-            return RedirectToAction("Edit", new { id = order.Id });
+            return View(await BuildEditOrderViewModelAsync(order));
         }
 
-        [Authorize(Roles = "Back-office")]
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+        [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
             var order = await _orderRepository.GetByIdAsync(id);
@@ -233,6 +204,12 @@ namespace AppCalisto.Controllers
                 return RedirectToAction("Edit", new { id });
             }
 
+            if (order.IsClosed)
+            {
+                TempData["Failure"] = "This order has already been closed, and cannot be deleted.";
+                return RedirectToAction("Edit", new { id });
+            }
+
             if (!await _orderRepository.DeleteAsync(order))
             {
                 TempData["Failure"] = "Could not delete order. This may be due to the entity being used by other entities or no longer existing.";
@@ -241,6 +218,31 @@ namespace AppCalisto.Controllers
 
             TempData["Success"] = "Order deleted successfully.";
             return RedirectToAction("Index");
+        }
+
+        [HttpPost, ValidateAntiForgeryToken]
+        public async Task<IActionResult> Close(int id)
+        {
+            var order = await _orderRepository.GetByIdAsync(id);
+            if (order == null)
+                return RedirectToAction("NotFound404", "Errors", new { entityName = "Order" });
+
+            if (order.IsClosed)
+            {
+                TempData["Failure"] = "This order had already been closed.";
+                return RedirectToAction("Details", new { id });
+            }
+
+            order.IsClosed = true;
+
+            if (!await _orderRepository.UpdateAsync(order))
+            {
+                TempData["Failure"] = "Could not close order. This may be due to the entity being used by other entities or no longer existing.";
+                return RedirectToAction("Details", new { id });
+            }
+
+            TempData["Success"] = "Order closed successfully.";
+            return RedirectToAction("Details", new { id });
         }
     }
 }

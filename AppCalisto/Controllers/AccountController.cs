@@ -28,8 +28,7 @@ namespace AppCalisto.Controllers
             return View();
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+        [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
             if (!ModelState.IsValid)
@@ -67,9 +66,7 @@ namespace AppCalisto.Controllers
             return View();
         }
 
-        [Authorize]
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+        [Authorize, HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
         {
             if (!ModelState.IsValid)
@@ -100,8 +97,7 @@ namespace AppCalisto.Controllers
             return View();
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+        [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> SendPasswordResetEmail(SendPasswordSetEmailViewModel model)
         {
             if (!ModelState.IsValid)
@@ -120,7 +116,7 @@ namespace AppCalisto.Controllers
                 var actionUrl = Url.Action
                 (
                     "SetPassword",
-                    "Users",
+                    "Account",
                     new { id = user.Id, passwordSetToken },
                     protocol: HttpContext.Request.Scheme
                 );
@@ -143,7 +139,7 @@ namespace AppCalisto.Controllers
                 var actionUrl = Url.Action
                 (
                     "SetPassword",
-                    "Users",
+                    "Account",
                     new { id = user.Id, passwordSetToken, emailConfirmationToken },
                     protocol: HttpContext.Request.Scheme
                 );
@@ -174,8 +170,7 @@ namespace AppCalisto.Controllers
             });
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+        [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> SetPassword(SetPasswordViewModel model)
         {
             var user = await _userRepository.GetByIdAsync(model.Id);

@@ -25,6 +25,7 @@ namespace AppCalisto.Data.Repositories
         {
             return await _context.Budgets
                 .Include(b => b.Order).ThenInclude(o => o.Technician)
+                .Include(b => b.Order).ThenInclude(o => o.Service).ThenInclude(s => s.Company)
                 .Include(b => b.Items).ThenInclude(bp => bp.Product)
                 .FirstOrDefaultAsync(b => b.Id == id);
         }
@@ -33,6 +34,7 @@ namespace AppCalisto.Data.Repositories
         {
             return await _context.Budgets
                 .Include(b => b.Order).ThenInclude(o => o.Technician)
+                .Include(b => b.Order).ThenInclude(o => o.Service).ThenInclude(s => s.Company)
                 .Include(b => b.Items).ThenInclude(bp => bp.Product)
                 .FirstOrDefaultAsync(b => b.Order.Id == orderId);
         }

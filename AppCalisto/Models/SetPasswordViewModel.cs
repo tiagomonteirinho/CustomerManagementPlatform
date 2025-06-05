@@ -7,13 +7,10 @@ namespace AppCalisto.Models
         [Required]
         public string Id { get; set; }
 
-        [Required]
-        [DataType(DataType.Password)]
+        [Required, DataType(DataType.Password)]
         public string NewPassword { get; set; }
 
-        [Required]
-        [DataType(DataType.Password)]
-        [Compare("NewPassword")]
+        [Required, DataType(DataType.Password), Compare("NewPassword")]
         public string ConfirmNewPassword { get; set; }
 
         [Required]

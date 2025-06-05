@@ -33,6 +33,7 @@
                         <tr>
                             <th>Number</th>
                             <th>Name</th>
+                            <th>Service</th>
                             <th>Base Price</th>
                             <th>Tax Rate</th>
                             <th>Tax Amount</th>
@@ -46,6 +47,9 @@
                             <tr>
                                 <td>@item.Id</td>
                                 <td>@item.Name</td>
+                                <td>
+                                    <a asp-controller="Services" asp-action="Details" asp-route-Id="@item.Service.Id">@item.Service.Abbreviation</a>
+                                </td>
                                 <td>@item.BasePrice€</td>
                                 <td>@item.TaxRate%</td>
                                 <td>+@item.TaxAmount.ToString("0.00")€</td>

@@ -40,8 +40,7 @@ namespace AppCalisto.Controllers
             });
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+        [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(ServiceViewModel model)
         {
             if (!ModelState.IsValid)
@@ -107,8 +106,7 @@ namespace AppCalisto.Controllers
             });
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+        [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(ServiceViewModel model)
         {
             if (!ModelState.IsValid)
@@ -147,8 +145,7 @@ namespace AppCalisto.Controllers
             return RedirectToAction("Edit", new { id = service.Id });
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+        [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
             var service = await _serviceRepository.GetByIdAsync(id);

@@ -9,6 +9,8 @@ namespace AppCalisto.Data.Repositories
     {
         Task<List<Product>> GetAllAsync();
 
+        Task<List<Product>> GetByServiceIdAsync(int serviceId);
+
         Task<Product> GetByIdAsync(int id);
 
         IEnumerable<SelectListItem> GetAll();

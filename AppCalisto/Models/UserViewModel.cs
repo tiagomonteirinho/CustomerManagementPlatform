@@ -9,13 +9,10 @@ namespace AppCalisto.Models
     {
         public string Id { get; set; }
 
-        [Required]
-        [MaxLength(99)]
+        [Required, MaxLength(99)]
         public string Name { get; set; }
 
-        [Required]
-        [EmailAddress]
-        [DataType(DataType.EmailAddress)]
+        [Required, EmailAddress, DataType(DataType.EmailAddress)]
         public string Email { get; set; }
 
         [Required(ErrorMessage = "At least one role must be selected.")]

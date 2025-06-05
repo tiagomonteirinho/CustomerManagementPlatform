@@ -10,16 +10,13 @@ namespace AppCalisto.Data.Entities
 
         [Required]
         public int OrderId { get; set; }
-
         public Order Order { get; set; }
 
         [Required]
         public string TechnicianId { get; set; }
-
         public User Technician { get; set; }
 
-        [Required]
-        [MaxLength(99)]
+        [Required, MaxLength(109)]
         public string Location { get; set; }
 
         [Required]
