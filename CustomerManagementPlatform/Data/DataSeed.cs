@@ -1,8 +1,10 @@
 ﻿using CustomerManagementPlatform.Data.Entities;
-using CustomerManagementPlatform.Helpers;
+using CustomerManagementPlatform.Data.Repositories;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace CustomerManagementPlatform.Data
@@ -11,74 +13,214 @@ namespace CustomerManagementPlatform.Data
     {
         private readonly DataContext _context;
         private readonly IUserRepository _userRepository;
-        private readonly IAccountHelper _accountHelper;
+        private readonly IRoleRepository _roleRepository;
 
-        public DataSeed(DataContext context, IUserRepository userRepository, IAccountHelper accountHelper)
+        public DataSeed(DataContext context, IUserRepository userRepository, IRoleRepository roleRepository)
         {
             _context = context;
             _userRepository = userRepository;
-            _accountHelper = accountHelper;
+            _roleRepository = roleRepository;
         }
 
         public async Task SeedAsync()
         {
             await _context.Database.EnsureCreatedAsync();
+            await CreateRoles();
+            await CreateUsers();
+            await CreateClients();
+            await CreateCompanies();
+            await CreateServices();
+            await CreateOrders();
+            await CreateProducts();
+        }
 
-            await _accountHelper.EnsureCreatedRoleAsync("Admin");
-            await _accountHelper.EnsureCreatedRoleAsync("Employee");
-            await _accountHelper.EnsureCreatedRoleAsync("Customer");
+        public async Task CreateRoles()
+        {
+            var seedRoles = new List<string> { "Admin", "Back-office", "Technician" };
+            foreach (var role in seedRoles)
+            {
+                if (!await _roleRepository.ExistsAsync(role))
+                {
+                    await _roleRepository.CreateAsync(role);
+                }
+            }
+        }
 
+        public async Task CreateUsers()
+        {
             var users = await _userRepository.GetAllAsync();
             if (users == null || users.Count <= 1)
             {
-                var seedUsers = new List<(string fullName, string email, string role)>
+                var seedUsers = new List<(string name, string email, IEnumerable<string> roles)>
                 {
-                    ("Admin", "admin@mail", "Admin"),
-                    ("Employee", "employee@mail", "Employee"),
-                    ("Customer", "customer@mail", "Customer"),
-                    ("Customer 2", "customer2@mail", "Customer"),
+                    ("Admin 1", "admin@mail", new List<string> { "Admin", "Back-office", "Technician" }),
+                    ("Admin 2", "admin2@mail", new List<string> { "Admin" }),
+                    ("Employee 1", "employee@mail", new List<string> { "Back-office" }),
+                    ("Employee 2", "employee2@mail", new List<string> { "Back-office" }),
+                    ("Technician 1", "technician@mail", new List<string> { "Technician" }),
+                    ("Technician 2", "technician2@mail", new List<string> { "Technician" })
                 };
 
-                foreach (var (fullName, email, role) in seedUsers)
+                foreach (var (name, email, roles) in seedUsers)
                 {
-                    var user = await CreateUser(fullName, email, role);
-                    users.Add(user);
+                    foreach (var role in roles)
+                    {
+                        if (!await _roleRepository.ExistsAsync(role))
+                        {
+                            throw new InvalidOperationException($"Could not find seed role.");
+                        }
+                    }
+
+                    var user = await _userRepository.GetByEmailAsync(email);
+                    if (user == null)
+                    {
+                        user = new User
+                        {
+                            Name = name,
+                            Email = email,
+                            UserName = email,
+                            EmailConfirmed = true,
+                        };
+
+                        if (await _userRepository.CreateAsync(user, "123456") != IdentityResult.Success)
+                        {
+                            throw new InvalidOperationException($"Could not create seed user.");
+                        }
+
+                        await _userRepository.AddToRolesAsync(user, roles);
+                        foreach (var role in roles)
+                        {
+                            if (!await _userRepository.IsInRoleAsync(user, role))
+                            {
+                                throw new InvalidOperationException($"Seed user {user.Id} not related to seed role {role}.");
+                            }
+                        }
+
+                        var token = await _userRepository.GenerateEmailConfirmationTokenAsync(user);
+                        await _userRepository.ConfirmEmailAsync(user, token);
+                    }
                 }
 
                 await _context.SaveChangesAsync();
             }
         }
 
-        private async Task<User> CreateUser(string fullName, string email, string role)
+        public async Task CreateClients()
         {
-            var user = await _userRepository.GetByEmailAsync(email);
-            if (user == null)
+            if (!await _context.Clients.AnyAsync())
             {
-                user = new User
+                var seedClients = new List<Client>
                 {
-                    FullName = fullName,
-                    Email = email,
-                    UserName = email,
-                    EmailConfirmed = true,
+                    new Client { Name = "Client 1", ContactPerson = "Person 1", Address = "Street 1, N1, Lisbon", ZipCode = "1234-567", Email = "client@mail", Phone = "111111111", Tin = "111111111" },
+                    new Client { Name = "Client 2", ContactPerson = "Person 2", Address = "Street 2, N2, Lisbon", ZipCode = "7654-321", Email = "client2@mail", Phone = "222222222", Tin = "222222222" }
                 };
 
-                var result = await _userRepository.CreateAsync(user, "123456");
-                if (result != IdentityResult.Success)
-                {
-                    throw new InvalidOperationException($"Could not create seed user.");
-                }
-
-                await _accountHelper.AddToRoleAsync(user, role);
-                if (!await _accountHelper.IsInRoleAsync(user, role))
-                {
-                    throw new InvalidOperationException($"Could not add seed user to role.");
-                }
-
-                var token = await _accountHelper.GenerateEmailConfirmationTokenAsync(user);
-                await _accountHelper.ConfirmEmailAsync(user, token);
+                await _context.Clients.AddRangeAsync(seedClients.AsEnumerable().Reverse());
+                await _context.SaveChangesAsync();
             }
+        }
 
-            return user;
+        public async Task CreateCompanies()
+        {
+            if (!await _context.Companies.AnyAsync())
+            {
+                var seedCompanies = new List<Company>
+                {
+                    new Company { Name = "Company 1", Abbreviation = "COMP1" },
+                    new Company { Name = "Company 2", Abbreviation = "COMP2" }
+                };
+
+                await _context.Companies.AddRangeAsync(seedCompanies.AsEnumerable().Reverse());
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        public async Task CreateServices()
+        {
+            if (!await _context.Services.AnyAsync())
+            {
+                var seedServices = new List<Service>
+                {
+                    new Service { Name = "COMP1 Service 1", Abbreviation = "C1SV1", CompanyId = 1 },
+                    new Service { Name = "COMP1 Service 2", Abbreviation = "C1SV2", CompanyId = 1 },
+                    new Service { Name = "COMP1 Service 3", Abbreviation = "C1SV3", CompanyId = 1 },
+                    new Service { Name = "COMP1 Service 4", Abbreviation = "C1SV4", CompanyId = 1 },
+                    new Service { Name = "Company 2", Abbreviation = "COMP2", CompanyId = 2 },
+                };
+
+                foreach (var service in seedServices)
+                {
+                    var company = await _context.Companies.FirstOrDefaultAsync(c => c.Id == service.CompanyId);
+                    if (company == null)
+                    {
+                        throw new InvalidOperationException($"Could not find seed company.");
+                    }
+
+                    service.Company = company;
+                }
+
+                await _context.Services.AddRangeAsync(seedServices.AsEnumerable().Reverse());
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        public async Task CreateOrders()
+        {
+            if (!await _context.Orders.AnyAsync())
+            {
+                var technician = await _userRepository.GetByEmailAsync("admin@mail");
+                var technician2 = await _userRepository.GetByEmailAsync("technician@mail");
+                var seedOrders = new List<Order>
+                {
+                    new Order { ClientId = 1000, ServiceId = 1, TechnicianId = technician.Id },
+                    new Order { ClientId = 1000, ServiceId = 2, TechnicianId = technician2.Id },
+                    new Order { ClientId = 1001, ServiceId = 5, TechnicianId = technician2.Id },
+                };
+
+                foreach (var order in seedOrders)
+                {
+                    var client = await _context.Clients.FirstOrDefaultAsync(c => c.Id == order.ClientId);
+                    if (client == null)
+                    {
+                        throw new InvalidOperationException($"Could not find seed client.");
+                    }
+
+                    var service = await _context.Services.FirstOrDefaultAsync(s => s.Id == order.ServiceId);
+                    if (service == null)
+                    {
+                        throw new InvalidOperationException($"Could not find seed service.");
+                    }
+
+                    await _context.Orders.AddAsync(order);
+                    await _context.SaveChangesAsync();
+
+                    var observation = new Observation { OrderId = order.Id };
+                    await _context.Observations.AddAsync(observation);
+
+                    var budget = new Budget { OrderId = order.Id };
+                    await _context.Budgets.AddAsync(budget);
+
+                    order.Observation = observation;
+                    order.Budget = budget;
+                    _context.Orders.Update(order);
+                    await _context.SaveChangesAsync();
+                }
+            }
+        }
+
+        public async Task CreateProducts()
+        {
+            if (!await _context.Products.AnyAsync())
+            {
+                var seedProducts = new List<Product>
+                {
+                    new Product { ServiceId = 1, Name = "Product 1", BasePrice = 12.57M, TaxRate = 23 },
+                    new Product { ServiceId = 2, Name = "Product 2", BasePrice = 43.09M, TaxRate = 6 }     
+                };
+
+                _context.Products.AddRange(seedProducts.AsEnumerable().Reverse());
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }

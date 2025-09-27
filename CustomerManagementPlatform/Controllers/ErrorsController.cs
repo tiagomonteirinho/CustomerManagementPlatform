@@ -25,7 +25,7 @@ namespace CustomerManagementPlatform.Controllers
         [Route("/NotFound404")]
         public IActionResult NotFound404(string entityName) // Not found error view for unknown pages or specific entities.
         {
-            return View("NotFound404", entityName);
+            return View(model: entityName);
         }
     }
 }

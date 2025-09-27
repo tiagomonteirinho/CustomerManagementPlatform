@@ -3,12 +3,11 @@
     ViewData["Title"] = "Login";
 }
 
-<h2>Login</h2>
-
-@if (ViewBag.ErrorMessage != null)
+<h2 class="text-center">Login</h2>
+@if (TempData["Failure"] != null)
 {
     <div class="alert alert-danger">
-        @ViewBag.ErrorMessage
+        @TempData["Failure"]
     </div>
 }
 
@@ -37,7 +36,6 @@
                 <input type="submit" value="Login" class="btn btn-primary" />
                 <a asp-action="SendPasswordResetEmail" class="btn btn-link">Forgotten password?</a>
             </div>
-            <br />Don't have an account? <a asp-action="Register">Register one</a>.
         </form>
     </div>
 </div>

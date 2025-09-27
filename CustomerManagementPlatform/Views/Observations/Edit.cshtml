@@ -1,0 +1,78 @@
+﻿@model CustomerManagementPlatform.Models.ObservationViewModel;
+@{
+    ViewData["Title"] = "Edit observation";
+}
+
+<h2>Observation #@Model.Id.ToString("D4")</h2>
+<hr />
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["Success"]
+    </div>
+}
+@if (TempData["Failure"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["Failure"]
+    </div>
+}
+
+<div class="row">
+    <div class="col-md-4 offset-md-4">
+        <form method="post" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly"></div>
+            <input type="hidden" asp-for="OrderId" />
+
+            <div class="form-group">
+                <label asp-for="Description">Description</label>
+                <textarea asp-for="Description" class="form-control" rows="3" maxlength="299"></textarea>
+                <span asp-validation-for="Description" class="text-warning"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ImageFiles">Add New Images</label>
+                <input asp-for="ImageFiles" class="form-control" type="file" multiple />
+                <span asp-validation-for="ImageFiles" class="text-warning"></span>
+            </div>
+
+            <div class="form-group">
+                <input type="submit" value="Save changes" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="form-group">
+    <label>Existing Images</label>
+    @if (Model.ExistingImageUrls == null || !Model.ExistingImageUrls.Any())
+    {
+        <div class="alert alert-warning">This observation does not contain any images.</div>
+    }
+    else
+    {
+        <div>
+            @foreach (var imageUrl in Model.ExistingImageUrls)
+            {
+                <div class="d-inline-block position-relative m-1">
+                    <a href="@Url.Content(imageUrl)" target="_blank">
+                        <img src="@Url.Content(imageUrl)" alt="Image" width="150" class="img-thumbnail" />
+                    </a>
+                    <form method="post" asp-action="DeleteImage" asp-controller="Observations" class="position-absolute" style="top: 0; right: 0;">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="observationId" value="@Model.Id" />
+                        <input type="hidden" name="imageUrl" value="@imageUrl" />
+                        <button type="submit" class="btn btn-sm btn-danger" title="Delete image" onclick="return confirm('Are you sure you want to delete this image?');">
+                            &times;
+                        </button>
+                    </form>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

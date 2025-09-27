@@ -1,0 +1,80 @@
+﻿@model CustomerManagementPlatform.Models.ClientViewModel;
+@{
+    ViewData["Title"] = "Edit client";
+}
+
+<h2>@Model.Name</h2>
+<hr />
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["Success"]
+    </div>
+}
+@if (TempData["Failure"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["Failure"]
+    </div>
+}
+
+<div class="row">
+    <div class="col-md-4 offset-md-4">
+        <form method="post">
+            <div asp-validation-summary="ModelOnly"></div>
+
+            <div class="form-group">
+                <label asp-for="Name">Name</label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-warning"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ContactPerson">Contact person</label>
+                <input asp-for="ContactPerson" class="form-control" />
+                <span asp-validation-for="ContactPerson" class="text-warning"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Address">Address</label>
+                <input asp-for="Address" class="form-control" />
+                <span asp-validation-for="Address" class="text-warning"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ZipCode">Zip code</label>
+                <input asp-for="ZipCode" class="form-control" />
+                <span asp-validation-for="ZipCode" class="text-warning"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Email">Email</label>
+                <input asp-for="Email" class="form-control" />
+                <span asp-validation-for="Email" class="text-warning"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Phone">Phone</label>
+                <input asp-for="Phone" class="form-control" />
+                <span asp-validation-for="Phone" class="text-warning"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Tin">TIN</label>
+                <input asp-for="Tin" class="form-control" />
+                <span asp-validation-for="Tin" class="text-warning"></span>
+            </div>
+
+            <div class="form-group">
+                <input type="submit" value="Save changes" class="btn btn-primary" />
+                <a asp-action="Details" asp-route-Id="@Model.Id" class="btn btn-secondary">Back to details</a>
+            </div>
+        </form>
+        <div class="form-group">
+            <form method="post" asp-action="Delete">
+                <input type="hidden" name="id" value="@Model.Id" />
+                <input type="submit" value="Delete client" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this client?');" />
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

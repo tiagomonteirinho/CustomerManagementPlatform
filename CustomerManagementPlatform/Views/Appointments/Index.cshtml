@@ -1,0 +1,87 @@
+﻿@model IEnumerable<CustomerManagementPlatform.Data.Entities.Appointment>
+@{
+    ViewData["Title"] = "Index";
+}
+
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.25/css/dataTables.bootstrap4.min.css" />
+<style>
+    td {
+        word-break: break-word;
+        word-wrap: break-word;
+        white-space: normal;
+        max-width: 300px;
+    }
+</style>
+
+<h2>All appointments</h2>
+<br />
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["Success"]
+    </div>
+}
+@if (TempData["Failure"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["Failure"]
+    </div>
+}
+
+<a asp-controller="Orders" asp-action="Index" class="btn btn-primary">Create new appointment</a>
+<br />
+<br />
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <table class="table table-hover table-responsive-lg" id="MyTable">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>Number</th>
+                            <th>Order</th>
+                            <th>Technician</th>
+                            <th>Location</th>
+                            <th>Start time</th>
+                            <th>End time</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.Id.ToString("D4")</td>
+                                <td>
+                                    <a asp-controller="Orders" asp-action="Details" asp-route-Id="@item.OrderId">Order #@item.OrderId.ToString("D4")</a>
+                                </td>
+                                <td>
+                                    <a asp-controller="Users" asp-action="Details" asp-route-Id="@item.TechnicianId">@item.Technician.Name</a>
+                                </td>
+                                <td>@item.Location</td>
+                                <td>@item.StartTime.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>@item.EndTime.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>
+                                    <a asp-action="Details" asp-route-Id="@item.Id" class="btn btn-sm btn-info">Details</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.25/js/dataTables.bootstrap4.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#MyTable').DataTable({
+                "order": [[0, "desc"]]
+            });
+        });
+    </script>
+}

@@ -1,12 +1,9 @@
-﻿using CustomerManagementPlatform.Data;
-using CustomerManagementPlatform.Data.Entities;
+﻿using CustomerManagementPlatform.Data.Repositories;
 using CustomerManagementPlatform.Helpers;
 using CustomerManagementPlatform.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using System.Data;
-using System;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -14,341 +11,193 @@ namespace CustomerManagementPlatform.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly IAccountHelper _accountHelper;
         private readonly IUserRepository _userRepository;
-        private readonly IConfiguration _configuration;
         private readonly IMailHelper _mailHelper;
 
-        public AccountController(IAccountHelper accountHelper, IUserRepository userRepository, IConfiguration configuration, IMailHelper mailHelper)
+        public AccountController(IUserRepository userRepository, IMailHelper mailHelper)
         {
-            _accountHelper = accountHelper;
             _userRepository = userRepository;
-            _configuration = configuration;
             _mailHelper = mailHelper;
+        }
+
+        public async Task<IActionResult> Dashboard()
+        {
+            var user = await _userRepository.GetByEmailAsync(User.Identity.Name);
+            return View(user);
         }
 
         public IActionResult Login()
         {
             if (User.Identity.IsAuthenticated)
-            {
-                return RedirectToAction("Index", "Home");
-            }
+                return RedirectToAction("Dashboard");
 
             return View();
         }
 
-        [HttpPost]
+        [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
             if (!ModelState.IsValid)
             {
-                ViewBag.ErrorMessage = "Invalid login attempt.";
+                TempData["Failure"] = "Invalid login attempt.";
                 return View(model);
             }
 
             var user = await _userRepository.GetByEmailAsync(model.Email);
             if (user == null)
             {
-                ViewBag.ErrorMessage = "Could not find that email address.";
+                TempData["Failure"] = "Could not find that email address.";
                 return View(model);
             }
 
-            var result = await _accountHelper.LoginAsync(model);
+            var result = await _userRepository.LoginAsync(model);
             if (!result.Succeeded)
             {
-                ViewBag.ErrorMessage = "Could not log in.";
+                TempData["Failure"] = "Could not log in.";
                 return View(model);
             }
 
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Dashboard");
         }
 
         public async Task<IActionResult> Logout()
         {
-            await _accountHelper.LogoutAsync();
-            return RedirectToAction("Index", "Home");
+            await _userRepository.LogoutAsync();
+            return RedirectToAction("Login");
         }
 
-        public IActionResult Register()
-        {
-            if (User.Identity.IsAuthenticated)
-            {
-                return RedirectToAction("Index", "Home"); // Prevent view access if authenticated.
-            }
-
-            return View();
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> Register(RegisterViewModel model)
-        {
-            if (!ModelState.IsValid)
-            {
-                ViewBag.ErrorMessage = "Could not register user account.";
-                return View(model);
-            }
-
-            var user = await _userRepository.GetByEmailAsync(model.Email);
-            if (user != null)
-            {
-                ViewBag.ErrorMessage = "That email is already being used.";
-                return View(model);
-            }
-
-            user = new User
-            {
-                FullName = model.FullName,
-                Email = model.Email,
-                UserName = model.Email,
-            };
-
-            var result = await _userRepository.CreateAsync(user, model.Password);
-            if (result != IdentityResult.Success)
-            {
-                ViewBag.ErrorMessage = "Could not register user account.";
-                return View(model);
-            }
-
-            await _accountHelper.AddToRoleAsync(user, "Customer");
-            if (!await _accountHelper.IsInRoleAsync(user, "Customer"))
-            {
-                ViewBag.ErrorMessage = "Could not register user account.";
-            }
-
-            var token = await _accountHelper.GenerateEmailConfirmationTokenAsync(user);
-            var id = user.Id;
-            var tokenUrl = Url.Action(
-                "ConfirmEmail",
-                "Account",
-                new { token, id },
-                protocol: HttpContext.Request.Scheme
-            );
-
-            bool emailSent = _mailHelper.SendEmail(user.Email, "Confirm email", $"<h2>Confirm email</h2>"
-                + $"To confirm your email and access your account, please click <a href=\"{tokenUrl}\" style=\"color: blue;\">here</a>.");
-
-            if (!emailSent)
-            {
-                ViewBag.ErrorMessage = "Could not send email confirmation email.";
-                return View(model);
-            }
-
-            ViewBag.SuccessMessage = "Account created successfully! Instructions to confirm it have been sent to your email address.";
-            ModelState.Clear(); // Clear view form.
-            return View(new RegisterViewModel()); // Return empty view model.
-        }
-
-        public async Task<IActionResult> ChangeDetails()
-        {
-            if (!User.Identity.IsAuthenticated)
-            {
-                return RedirectToAction("Index", "Home"); // Prevent view access if unauthenticated.
-            }
-
-            var user = await _userRepository.GetByEmailAsync(User.Identity.Name);
-            if (user == null)
-            {
-                return RedirectToAction("Index", "Home");
-            }
-
-            var model = new ChangeDetailsViewModel
-            {
-                FullName = user.FullName
-            };
-            return View(model);
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> ChangeDetails(ChangeDetailsViewModel model)
-        {
-            if (!ModelState.IsValid)
-            {
-                ViewBag.ErrorMessage = "Could not update user details.";
-                return View(model);
-            }
-
-            var user = await _userRepository.GetByEmailAsync(User.Identity.Name);
-            if (user == null)
-            {
-                return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
-            }
-
-            if (model.FullName == user.FullName)
-            {
-                ViewBag.SuccessMessage = "No changes detected. No updates were made.";
-                return View(model);
-            }
-
-            user.FullName = model.FullName;
-
-            var response = await _accountHelper.ChangeDetailsAsync(user);
-            if (response.Succeeded)
-            {
-                ViewBag.SuccessMessage = "User details updated successfully!";
-                return View(model);
-            }
-
-            ViewBag.ErrorMessage = "Could not update user details.";
-            return View(model);
-        }
-
+        [Authorize]
         public IActionResult ChangePassword()
         {
             return View();
         }
 
-        [HttpPost]
+        [Authorize, HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                var user = await _userRepository.GetByEmailAsync(User.Identity.Name);
-                if (user == null)
-                {
-                    return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
-                }
-
-                var result = await _accountHelper.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
-                if (result.Succeeded)
-                {
-                    ViewBag.SuccessMessage = "Password updated successfully!";
-                    return View();
-                }
-
-                ViewBag.ErrorMessage = result.Errors.FirstOrDefault().Description;
+                return View();
             }
 
-            return View();
+            var user = await _userRepository.GetByEmailAsync(User.Identity.Name);
+            if (user == null)
+                return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
+
+            var result = await _userRepository.ChangePasswordAsync(user, model.OldPassword, model.NewPassword);
+            if (result.Succeeded)
+            {
+                TempData["Success"] = "Password updated successfully!";
+                return View();
+            }
+
+            TempData["Failure"] = result.Errors.FirstOrDefault().Description;
+            return RedirectToAction("ChangePassword");
         }
 
         public IActionResult SendPasswordResetEmail()
         {
             if (User.Identity.IsAuthenticated)
-            {
-                return RedirectToAction("Index", "Home");
-            }
+                _userRepository.LogoutAsync();
 
             return View();
         }
 
-        [HttpPost]
-        public async Task<IActionResult> SendPasswordResetEmail(SendPasswordResetEmailViewModel model)
+        [HttpPost, ValidateAntiForgeryToken]
+        public async Task<IActionResult> SendPasswordResetEmail(SendPasswordSetEmailViewModel model)
         {
-            if (ModelState.IsValid)
-            {
-                var user = await _userRepository.GetByEmailAsync(model.Email);
-                if (user == null)
-                {
-                    ViewBag.ErrorMessage = "Email address not found.";
-                    return View(model);
-                }
+            if (!ModelState.IsValid)
+                return View(model);
 
-                if (!user.EmailConfirmed)
-                {
-                    var token = await _accountHelper.GenerateEmailConfirmationTokenAsync(user);
-                    var id = user.Id;
-                    var tokenUrl = Url.Action(
-                        "ConfirmEmail",
-                        "Account",
-                        new { token, id },
-                        protocol: HttpContext.Request.Scheme
-                    );
-
-                    bool emailSent = _mailHelper.SendEmail(user.Email, "Confirm email", $"<h2>Confirm email</h2>"
-                        + $"To confirm your email and access your account, please click <a href=\"{tokenUrl}\" style=\"color: blue;\">here</a>.");
-
-                    if (!emailSent)
-                    {
-                        ViewBag.ErrorMessage = "Could not send email confirmation email.";
-                        return View(model);
-                    }
-
-                    ViewBag.SuccessMessage = "This account has not been confirmed. Instructions to confirm it have been sent to your email address.";
-                    return View();
-                }
-                else
-                {
-                    var token = await _accountHelper.GeneratePasswordResetTokenAsync(user);
-                    var id = user.Id;
-                    var tokenUrl = Url.Action(
-                        "ResetPassword",
-                        "Account",
-                        new { token, id },
-                        protocol: HttpContext.Request.Scheme
-                    );
-
-                    bool emailSent = _mailHelper.SendEmail(user.Email, "Password reset", $"<h2>Password reset</h2>"
-                        + $"To reset your password, please update it <a href=\"{tokenUrl}\" style=\"color: blue;\">here</a>.");
-
-                    if (!emailSent)
-                    {
-                        ViewBag.ErrorMessage = "Could not send password reset email.";
-                        return View(model);
-                    }
-
-                    ViewBag.SuccessMessage = "Instructions to reset your password have been sent to your email address.";
-                    return View();
-                }
-            }
-
-            return View(model);
-        }
-
-        public IActionResult ResetPassword(string token, string id)
-        {
-            if (User.Identity.IsAuthenticated)
-            {
-                return RedirectToAction("Index", "Home");
-            }
-
-            return View();
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
-        {
-            var user = await _userRepository.GetByIdAsync(model.Id);
+            var user = await _userRepository.GetByEmailAsync(model.Email);
             if (user == null)
             {
-                return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
-            }
-
-            var result = await _accountHelper.ResetPasswordAsync(user, model.Token, model.NewPassword);
-            if (!result.Succeeded)
-            {
-                ViewBag.ErrorMessage = "Could not reset password.";
+                TempData["Failure"] = "Email address not found.";
                 return View(model);
             }
 
-            ViewBag.SuccessMessage = "Password updated successfully!";
-            return View();
+            if (user.EmailConfirmed)
+            {
+                var passwordSetToken = await _userRepository.GeneratePasswordSetTokenAsync(user);
+                var actionUrl = Url.Action
+                (
+                    "SetPassword",
+                    "Account",
+                    new { id = user.Id, passwordSetToken },
+                    protocol: HttpContext.Request.Scheme
+                );
+
+                bool emailSent = _mailHelper.SendEmail(user.Email, "Password reset", $"<h2>Password reset</h2>"
+                    + $"To reset your password, please update it <a href=\"{actionUrl}\" style=\"color: blue;\">here</a>.");
+                if (!emailSent)
+                {
+                    TempData["Failure"] = "Could not send password reset email.";
+                    return View(model);
+                }
+
+                TempData["Success"] = "Instructions to reset your password have been sent to your email address.";
+                return RedirectToAction("SendPasswordResetEmail");
+            }
+            else
+            {
+                string passwordSetToken = await _userRepository.GeneratePasswordSetTokenAsync(user);
+                var emailConfirmationToken = await _userRepository.GenerateEmailConfirmationTokenAsync(user);
+                var actionUrl = Url.Action
+                (
+                    "SetPassword",
+                    "Account",
+                    new { id = user.Id, passwordSetToken, emailConfirmationToken },
+                    protocol: HttpContext.Request.Scheme
+                );
+
+                bool emailSent = _mailHelper.SendEmail(user.Email, "Email confirmation", $"<h2>Email confirmation</h2>"
+                    + $"To confirm your email, please set your password <a href=\"{actionUrl}\" style=\"color: blue;\">here</a>.");
+                if (!emailSent)
+                {
+                    TempData["Failure"] = "Could not send email confirmation email.";
+                    return View(model);
+                }
+
+                TempData["Success"] = "This account has not been confirmed. Instructions to confirm it and set your password have been sent to your email address.";
+                return RedirectToAction("SendPasswordResetEmail");
+            }
         }
 
-        public async Task<IActionResult> ConfirmEmail(string id, string token)
+        public IActionResult SetPassword(string id, string passwordSetToken, string emailConfirmationToken)
         {
             if (User.Identity.IsAuthenticated)
-            {
-                await _accountHelper.LogoutAsync();
-            }
+                _userRepository.LogoutAsync();
 
-            if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(token))
+            return View(new SetPasswordViewModel
             {
-                return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
-            }
+                Id = id,
+                PasswordSetToken = passwordSetToken,
+                EmailConfirmationToken = emailConfirmationToken
+            });
+        }
 
-            var user = await _userRepository.GetByIdAsync(id);
+        [HttpPost, ValidateAntiForgeryToken]
+        public async Task<IActionResult> SetPassword(SetPasswordViewModel model)
+        {
+            var user = await _userRepository.GetByIdAsync(model.Id);
             if (user == null)
-            {
                 return RedirectToAction("NotFound404", "Errors", new { entityName = "User" });
-            }
 
-            var result = await _accountHelper.ConfirmEmailAsync(user, token);
-            if (!result.Succeeded)
+            if (!string.IsNullOrEmpty(model.EmailConfirmationToken))
             {
-                return RedirectToAction("NotFound404", "Errors");
+                var confirmEmail = await _userRepository.ConfirmEmailAsync(user, model.EmailConfirmationToken);
+                if (!confirmEmail.Succeeded)
+                    return RedirectToAction("NotFound404", "Errors");
             }
 
-            return View();
+            if (await _userRepository.SetPasswordAsync(user, model.PasswordSetToken, model.NewPassword) != IdentityResult.Success)
+            {
+                TempData["Failure"] = "Could not set password.";
+                return View(model);
+            }
+
+            TempData["Success"] = "Password updated successfully!";
+            return RedirectToAction("SetPassword");
         }
     }
 }

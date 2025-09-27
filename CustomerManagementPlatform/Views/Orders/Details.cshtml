@@ -1,0 +1,219 @@
+﻿@model CustomerManagementPlatform.Data.Entities.Order
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h2>Order #@Model.Id.ToString("D4")</h2>
+<hr />
+<div>
+    <dl class="row">
+        <dt class="col-sm-2">Number</dt>
+        <dd class="col-sm-10">@Model.Id.ToString("D4")</dd>
+        <dt class="col-sm-2">Client</dt>
+        <dd class="col-sm-10">
+            <a asp-controller="Clients" asp-action="Details" asp-route-Id="@Model.ClientId">@Model.Client.Name</a>
+        </dd>
+        <dt class="col-sm-2">Service</dt>
+        <dd class="col-sm-10">
+            <a asp-controller="Services" asp-action="Details" asp-route-Id="@Model.ServiceId">@Model.Service.Name</a>
+        </dd>
+        <dt class="col-sm-2">Technician</dt>
+        <dd class="col-sm-10">
+            <a asp-controller="Users" asp-action="Details" asp-route-Id="@Model.TechnicianId">@Model.Technician.Name</a>
+        </dd>
+        <dt class="col-sm-2">Creation</dt>
+        <dd class="col-sm-10">@Model.CreationTime</dd>
+        <dt class="col-sm-2">Urgent</dt>
+        <dd class="col-sm-10">@(Model.IsUrgent ? "Yes" : "No")</dd>
+        <dt class="col-sm-2">Status</dt>
+        <dd class="col-sm-10">
+            @(Model.IsClosed ? "Closed" : "Ongoing")
+            <br />
+            @Html.Raw(Model.Status?.Replace("\n", "<br />"))
+        </dd>
+        <dt class="col-sm-2">Client Description</dt>
+        <dd class="col-sm-10">@Html.Raw(Model.ClientDescription?.Replace("\n", "<br />"))</dd>
+    </dl>
+</div>
+<div class="form-group">
+    <a asp-action="Edit" asp-route-Id="@Model.Id" class="btn btn-primary">Edit</a>
+    <a asp-action="Index" class="btn btn-secondary">Back to list</a>
+</div>
+<hr />
+
+<div class="form-group d-flex align-items-center justify-content-between">
+    <h3>Appointments</h3>
+    <div>
+        <a asp-controller="Appointments" asp-action="Create" asp-route-OrderId="@Model.Id" class="btn btn-primary">Add new appointment</a>
+        <button type="button" class="btn btn-secondary" onclick="toggleSection('appointmentsSection', this)">Hide</button>
+    </div>
+</div>
+<div id="appointmentsSection">
+    @if (Model.Appointments == null || Model.Appointments.Count == 0)
+    {
+        <div class="alert alert-warning">This order does not contain any appointments.</div>
+    }
+    else
+    {
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-body">
+                        <table class="table table-hover table-responsive-lg" id="AppointmentsTable">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>Location</th>
+                                    <th>Start time</th>
+                                    <th>End time</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.Appointments.OrderBy(i => i.Id))
+                                {
+                                    <tr>
+                                        <td>@item.Location</td>
+                                        <td>@item.StartTime.ToString("dd/MM/yyyy HH:mm")</td>
+                                        <td>@item.EndTime.ToString("dd/MM/yyyy HH:mm")</td>
+                                        <td>
+                                            <a asp-controller="Appointments" asp-action="Details" asp-route-Id="@item.Id" class="btn btn-sm btn-info">Details</a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+<hr />
+
+<div class="form-group d-flex align-items-center justify-content-between">
+    <h3>Observation</h3>
+    <div>
+        <button type="button" class="btn btn-secondary" onclick="toggleSection('observationSection', this)">Hide</button>
+    </div>
+</div>
+<div id="observationSection">
+    <h4>Technician Description</h4>
+    <p>@Html.Raw(Model.Observation.Description?.Replace("\n", "<br />"))</p>
+    <br />
+    <h4>Images</h4>
+    @if (Model.Observation.Images == null || !Model.Observation.Images.Any())
+    {
+        <div class="alert alert-warning">This observation does not contain any images.</div>
+    }
+    else
+    {
+        <div>
+            @foreach (var image in Model.Observation.Images)
+            {
+                <div class="d-inline-block position-relative m-1">
+                    <a href="@Url.Content(image.Url)" target="_blank">
+                        <img src="@Url.Content(image.Url)" alt="Image" width="150" class="img-thumbnail" />
+                    </a>
+                </div>
+            }
+        </div>
+    }
+</div>
+<hr />
+
+<div class="form-group d-flex align-items-center justify-content-between">
+    <h3>Budget</h3>
+    <div>
+        <a asp-controller="Budgets" asp-action="Edit" asp-route-id="@Model.Budget.Id" class="btn btn-primary">Edit</a>
+        <button type="button" class="btn btn-secondary" onclick="toggleSection('budgetSection', this)">Hide</button>
+    </div>
+</div>
+<div id="budgetSection">
+    <h4 class="mt-3">
+        Budget total:
+        <strong>
+            @Model.Budget.Total.ToString("0.00")€
+        </strong>
+    </h4>
+    <br />
+    <h4>Products</h4>
+    @if (Model.Budget.Items == null || !Model.Budget.Items.Any())
+    {
+        <div class="alert alert-warning">This budget does not contain any products.</div>
+    }
+    else
+    {
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-body">
+                        <table class="table table-hover table-responsive-lg" id="BudgetItemsTable">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Unit Price</th>
+                                    <th>Quantity</th>
+                                    <th>Total</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.Budget.Items)
+                                {
+                                    <tr>
+                                        <td>@item.Product.Name</td>
+                                        <td>@item.Product.UnitPrice.ToString("0.00")€</td>
+                                        <td>@item.Quantity</td>
+                                        <td>@item.Total.ToString("0.00")€</td>
+                                        <td>
+                                            <a asp-controller="Products" asp-action="Details" asp-route-Id="@item.Product.Id" class="btn btn-sm btn-info">Details</a>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+<hr />
+
+@if (!Model.IsClosed)
+{
+    <div class="form-group d-flex align-items-center justify-content-between">
+        <h3>Close order</h3>
+        <form method="post" asp-controller="Orders" asp-action="Close">
+            <input type="hidden" name="id" value="@Model.Id" />
+            <input type="submit" value="Close order" class="btn btn-danger" onclick="return confirm('Are you sure you want to close this order?');" />
+        </form>
+    </div>
+}
+
+@section Scripts {
+    <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.25/js/dataTables.bootstrap4.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#AppointmentsTable').DataTable({
+                "order": [[0, "desc"]]
+            });
+        });
+
+        $(document).ready(function () {
+            $('#BudgetItemsTable').DataTable({
+                "order": [[0, "desc"]]
+            });
+        });
+
+        function toggleSection(id, btn) {
+            const section = document.getElementById(id);
+            if (section) {
+                const isHidden = section.style.display === "none";
+                section.style.display = isHidden ? "block" : "none";
+                btn.textContent = isHidden ? "Hide" : "Show";
+            }
+        }
+    </script>
+}

@@ -1,5 +1,6 @@
 using CustomerManagementPlatform.Data;
 using CustomerManagementPlatform.Data.Entities;
+using CustomerManagementPlatform.Data.Repositories;
 using CustomerManagementPlatform.Helpers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -36,7 +37,8 @@ namespace CustomerManagementPlatform
                 cfg.Password.RequireLowercase = false;
                 cfg.Password.RequiredUniqueChars = 0;
                 cfg.Password.RequireNonAlphanumeric = false;
-            }).AddDefaultTokenProviders().AddEntityFrameworkStores<DataContext>();
+            }).AddDefaultTokenProviders()
+                .AddEntityFrameworkStores<DataContext>();
 
             services.AddAuthentication()
                 .AddCookie()
@@ -57,7 +59,17 @@ namespace CustomerManagementPlatform
 
             services.AddTransient<DataSeed>();
             services.AddScoped<IUserRepository, UserRepository>();
-            services.AddScoped<IAccountHelper, AccountHelper>();
+            services.AddScoped<IRoleRepository, RoleRepository>();
+            services.AddScoped<IClientRepository, ClientRepository>();
+            services.AddScoped<IOrderRepository, OrderRepository>();
+            services.AddScoped<ICompanyRepository, CompanyRepository>();
+            services.AddScoped<IServiceRepository, ServiceRepository>();
+            services.AddScoped<IProductRepository, ProductRepository>();
+            services.AddScoped<IBudgetRepository, BudgetRepository>();
+            services.AddScoped<IObservationRepository, ObservationRepository>();
+            services.AddScoped<IAppointmentRepository, AppointmentRepository>(); 
+            services.AddScoped<IItemRepository, ItemRepository>();
+            services.AddScoped<INotificationRepository, NotificationRepository>();
             services.AddScoped<IMailHelper, MailHelper>();
 
             services.ConfigureApplicationCookie(cfg =>
@@ -97,7 +109,7 @@ namespace CustomerManagementPlatform
             {
                 endpoints.MapControllerRoute(
                     name: "default",
-                    pattern: "{controller=Home}/{action=Index}/{id?}");
+                    pattern: "{controller=Account}/{action=Login}/{id?}"); // Default page.
             });
         }
     }

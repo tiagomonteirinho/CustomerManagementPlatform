@@ -1,0 +1,76 @@
+﻿@model IEnumerable<CustomerManagementPlatform.Data.Entities.Order>
+@{
+    ViewData["Title"] = "Index";
+}
+
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.25/css/dataTables.bootstrap4.min.css" />
+
+<h2>Orders</h2>
+<br />
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["Success"]
+    </div>
+}
+@if (TempData["Failure"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["Failure"]
+    </div>
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <table class="table table-hover table-responsive-lg" id="MyTable">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>Number</th>
+                            <th>Client</th>
+                            <th>Service</th>
+                            <th>Creation time</th>
+                            <th>Urgent</th>
+                            <th>Status</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.Id.ToString("D4")</td>
+                                <td>@item.Client.Name</td>
+                                <td>@item.Service.Abbreviation</td>
+                                <td>@item.CreationTime</td>
+                                <td>
+                                    @(item.IsClosed ? "Closed" : "Ongoing")
+                                    <br />
+                                    @item.Status
+                                </td>
+                                <td>@(item.IsUrgent ? "Yes" : "No")</td>
+                                <td>
+                                    <a asp-controller="TechnicianAppointments" asp-action="Create" asp-route-OrderId="@item.Id" class="btn btn-sm btn-primary">Add new appointment</a>
+                                    <a asp-action="Details" asp-route-Id="@item.Id" class="btn btn-sm btn-info">Details</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.25/js/dataTables.bootstrap4.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#MyTable').DataTable({
+                "order": [[0, "desc"]]
+            });
+        });
+    </script>
+}

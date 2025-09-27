@@ -1,6 +1,4 @@
-﻿@inject CustomerManagementPlatform.Data.IUserRepository _userRepository
-
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -10,49 +8,93 @@
     <link rel="stylesheet" href="~/css/site.css" />
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">CustomerManagementPlatform</a>
-                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        @if (User.IsInRole("Admin"))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Users" asp-action="Index">Users</a>
+    @if (User.Identity.IsAuthenticated)
+    {
+        <header>
+            <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+                <div class="container">
+                    <a class="navbar-brand" asp-controller="Account" asp-action="Dashboard">Dashboard</a>
+                    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                            aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                        <ul class="navbar-nav flex-grow-1">
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownAdmin" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Admin</a>
+                                    <ul class="dropdown-menu" aria-labelledby="navbarDropdownAdmin">
+                                        <li class="nav-item">
+                                            <a class="nav-link text-dark" asp-controller="Users" asp-action="Index">Users</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link text-dark" asp-controller="Companies" asp-action="Index">Companies</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link text-dark" asp-controller="Services" asp-action="Index">Services</a>
+                                        </li>
+                                    </ul>
+                                </li>
+                            }
+                            @if (User.IsInRole("Back-office"))
+                            {
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownBackoffice" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Back-office</a>
+                                    <ul class="dropdown-menu" aria-labelledby="navbarDropdownBackoffice">
+                                        <li class="nav-item">
+                                            <a class="nav-link text-dark" asp-controller="Clients" asp-action="Index">Clients</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link text-dark" asp-controller="Products" asp-action="Index">Products</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link text-dark" asp-controller="Orders" asp-action="Index">Orders</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link text-dark" asp-controller="Appointments" asp-action="Index">Appointments</a>
+                                        </li>
+                                    </ul>
+                                </li>
+                            }
+                            @if (User.IsInRole("Technician"))
+                            {
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownTechnician" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Technician</a>
+                                    <ul class="dropdown-menu" aria-labelledby="navbarDropdownTechnician">
+                                        <li class="nav-item">
+                                            <a class="nav-link text-dark" asp-controller="TechnicianOrders" asp-action="Index">Orders</a>
+                                        </li>
+                                        <li class="nav-item">
+                                            <a class="nav-link text-dark" asp-controller="TechnicianAppointments" asp-action="Index">Appointments</a>
+                                        </li>
+                                    </ul>
+                                </li>
+                            }
+                        </ul>
+                        <ul class="nav navbar-nav navbar-right">
+                            <li class="nav-item dropdown">
+                                @{
+                                    var user = await _userRepository.GetByEmailAsync(User.Identity.Name);
+                                    var userName = user.Name.Length > 25 ? user.Name.Substring(0, 25) + "..." : user.Name;
+                                }
+                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownAccount" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">@userName</a>
+                                <ul class="dropdown-menu" aria-labelledby="navbarDropdownAccount">
+                                    <li class="nav-item">
+                                        <a class="nav-link text-dark" asp-controller="Account" asp-action="ChangePassword">Change password</a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link text-dark" asp-controller="Account" asp-action="Logout">Logout</a>
+                                    </li>
+                                </ul>
                             </li>
-                        }
-                    </ul>
-                    <ul class="nav navbar-nav navbar-right">
-                        @if (!User.Identity.IsAuthenticated)
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Login">Login</a>
-                            </li>
-                        }
-                        else
-                        {
-                            var user = await _userRepository.GetByEmailAsync(User.Identity.Name);
-                            var userFullName = user.FullName.Length > 25 ? user.FullName.Substring(0, 25) + "..." : user.FullName;
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="ChangeDetails">@userFullName</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Logout">Logout</a>
-                            </li>
-                        }
-                    </ul>
+                        </ul>
+                    </div>
                 </div>
-            </div>
-        </nav>
-    </header>
+            </nav>
+        </header>
+    }
+
     <div class="container">
         <main role="main" class="pb-3">
             @RenderBody()
@@ -64,6 +106,7 @@
             &copy; 2025 - CustomerManagementPlatform - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
     </footer>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

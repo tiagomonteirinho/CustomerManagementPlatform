@@ -1,0 +1,105 @@
+﻿@model CustomerManagementPlatform.Models.ProductViewModel;
+@{
+    ViewData["Title"] = "Create new product";
+}
+
+<h2>Create new product</h2>
+<hr />
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["Success"]
+    </div>
+}
+@if (TempData["Failure"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["Failure"]
+    </div>
+}
+
+<div class="row">
+    <div class="col-md-4 offset-md-4">
+        <form method="post">
+            <div asp-validation-summary="ModelOnly"></div>
+
+            <div class="form-group">
+                <label asp-for="CompanyId">Company</label>
+                <select asp-for="CompanyId" asp-items="Model.SelectableCompanies" class="form-control" id="companyDropdown"></select>
+                <span asp-validation-for="CompanyId" class="text-warning"></span>
+            </div>
+            <div class="form-group" id="serviceForm" style="display:none;">
+                <label asp-for="ServiceId">Service</label>
+                <select asp-for="ServiceId" asp-items="Model.SelectableServices" class="form-control" id="serviceDropdown"></select>
+                <span asp-validation-for="ServiceId" class="text-warning"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Name">Name</label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-warning"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="BasePrice">Base Price</label>
+                <input asp-for="BasePrice" class="form-control" type="number" min="0" />
+                <span asp-validation-for="BasePrice" class="text-warning"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="TaxRate">Tax Rate</label>
+                <select asp-for="TaxRate" asp-items="Model.SelectableTaxes" class="form-control"></select>
+                <span asp-validation-for="TaxRate" class="text-warning"></span>
+            </div>
+
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+                <a asp-action="Index" class="btn btn-secondary">Back to list</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    @* Service selection *@
+    <script>
+        $(document).ready(function () {
+            var $companyDropdown = $('#companyDropdown');
+            var $serviceDropdown = $('#serviceDropdown');
+            var $serviceForm = $('#serviceForm');
+
+            function toggleServiceForm() {
+                var companyId = $companyDropdown.val();
+
+                $serviceDropdown.empty();
+                $serviceForm.toggle(!!companyId);
+
+                if (companyId) {
+                    $.ajax({
+                        url: '/Orders/GetCompanyServices',
+                        type: 'GET',
+                        data: { companyId: companyId },
+                        success: function (data) {
+                            $.each(data, function (i, item) {
+                                $serviceDropdown.append($('<option>', {
+                                    value: item.value,
+                                    text: item.text
+                                }));
+                            });
+                        },
+                        error: function () {
+                            alert('Error loading services. Please try again.');
+                        }
+                    });
+                }
+            }
+
+            // Bind change handler.
+            $companyDropdown.on('change', toggleServiceForm);
+
+            // Run once on load in case a value is preselected (edit scenarios).
+            toggleServiceForm();
+        });
+    </script>
+}

@@ -1,0 +1,118 @@
+﻿@model CustomerManagementPlatform.Models.ProductViewModel;
+@{
+    ViewData["Title"] = "Edit product";
+}
+
+<h2>@Model.Name</h2>
+<hr />
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["Success"]
+    </div>
+}
+@if (TempData["Failure"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["Failure"]
+    </div>
+}
+
+<div class="row">
+    <div class="col-md-4 offset-md-4">
+        <form method="post">
+            <div asp-validation-summary="ModelOnly"></div>
+
+            <div class="form-group">
+                <label asp-for="Name">Name</label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-warning"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="BasePrice">Base Price</label>
+                <input asp-for="BasePrice" class="form-control" type="number" min="0" />
+                <span asp-validation-for="BasePrice" class="text-warning"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="TaxRate">Tax Rate</label>
+                <select asp-for="TaxRate" asp-items="Model.SelectableTaxes" class="form-control"></select>
+                <span asp-validation-for="TaxRate" class="text-warning"></span>
+            </div>
+
+            <div class="form-group">
+                <input type="submit" value="Save changes" class="btn btn-primary" />
+                <a asp-action="Details" asp-route-Id="@Model.Id" class="btn btn-secondary">Back to details</a>
+            </div>
+        </form>
+        <div class="form-group">
+            <form method="post" asp-action="Delete">
+                <input type="hidden" name="id" value="@Model.Id" />
+                <input type="submit" value="Delete product" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this product?');" />
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    @* Service selection *@
+    <script>
+        $(document).ready(function () {
+            var $companyDropdown = $('#companyDropdown');
+            var $serviceDropdown = $('#serviceDropdown');
+            var $serviceForm = $('#serviceForm');
+            var currentServiceId = '@Model.ServiceId';
+
+            function loadServices(companyId, preselectServiceId) {
+                $serviceDropdown.empty();
+
+                if (companyId) {
+                    $serviceForm.show();
+                    $.ajax({
+                        url: '/Orders/GetCompanyServices',
+                        type: 'GET',
+                        data: { companyId: companyId },
+                        success: function (data) {
+                            $.each(data, function (i, item) {
+                                var option = $('<option>', {
+                                    value: item.value,
+                                    text: item.text
+                                });
+
+                                if (item.value == preselectServiceId) {
+                                    option.prop('selected', true);
+                                }
+
+                                $serviceDropdown.append(option);
+                            });
+                        },
+                        error: function () {
+                            alert('Error loading services. Please try again.');
+                        }
+                    });
+                } else {
+                    $serviceForm.hide();
+                }
+            }
+
+            // Initial check.
+            var initialCompanyId = $companyDropdown.val();
+            if (initialCompanyId) {
+                $serviceForm.show();
+                // Only reload via AJAX if services were NOT passed via model.
+                if ($serviceDropdown.children().length <= 1) {
+                    loadServices(initialCompanyId, currentServiceId);
+                }
+            }
+
+            // Update services dropdown on company change.
+            $companyDropdown.on('change', function () {
+                var selectedCompanyId = $(this).val();
+                loadServices(selectedCompanyId, null);
+            });
+        });
+    </script>
+}

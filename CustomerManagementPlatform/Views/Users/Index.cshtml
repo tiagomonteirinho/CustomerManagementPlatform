@@ -7,6 +7,23 @@
 
 <h2>All users</h2>
 <br />
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["Success"]
+    </div>
+}
+@if (TempData["Failure"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["Failure"]
+    </div>
+}
+
+<a asp-action="Create" class="btn btn-primary">Create new user</a>
+<br />
+<br />
+
 <div class="row">
     <div class="col-md-12">
         <div class="card">
@@ -15,9 +32,10 @@
                     <thead>
                         <tr>
                             <th>Roles</th>
-                            <th>Full Name</th>
+                            <th>Name</th>
                             <th>Email</th>
-                            <th>Email Confirmed</th>
+                            <th>Email confirmed</th>
+                            <th>Active</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -25,12 +43,17 @@
                         @foreach (var item in Model)
                         {
                             <tr>
-                                <td>@string.Join(", ", item.Roles)</td>
-                                <td>@Html.DisplayFor(modelItem => item.FullName)</td>
-                                <td>@Html.DisplayFor(modelItem => item.Email)</td>
-                                <td>@Html.DisplayFor(modelItem => item.EmailConfirmed)</td>
+                                <td>@string.Join(", ", item.Roles ?? new List<string>())</td>
+                                <td>@item.Name</td>
+                                <td>@item.Email</td>
                                 <td>
-                                    <a asp-controller="Users" asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-primary">Details</a>
+                                    @(item.EmailConfirmed ? "Yes" : "No")
+                                </td>
+                                <td>
+                                    @((item.LockoutEnd == null || item.LockoutEnd < DateTimeOffset.Now) ? "Yes" : "No")
+                                </td>
+                                <td>
+                                    <a asp-action="Details" asp-route-Id="@item.Id" class="btn btn-sm btn-info">Details</a>
                                 </td>
                             </tr>
                         }
@@ -46,7 +69,9 @@
     <script src="https://cdn.datatables.net/1.10.25/js/dataTables.bootstrap4.min.js"></script>
     <script type="text/javascript">
         $(document).ready(function () {
-            $('#MyTable').DataTable();
+            $('#MyTable').DataTable({
+                "order": [[0, "desc"]]
+            });
         });
     </script>
 }

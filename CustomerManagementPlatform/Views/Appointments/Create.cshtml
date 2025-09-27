@@ -1,0 +1,76 @@
+﻿@model CustomerManagementPlatform.Models.AppointmentViewModel;
+@{
+    ViewData["Title"] = "Create new appointment";
+}
+
+<h2>Create new appointment</h2>
+<hr />
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["Success"]
+    </div>
+}
+@if (TempData["Failure"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["Failure"]
+    </div>
+}
+
+<div class="row">
+    <div class="col-md-4 offset-md-4">
+        <form method="post">
+            <div asp-validation-summary="ModelOnly"></div>
+            <input type="hidden" asp-for="OrderId" />
+
+            <div class="form-group">
+                <label asp-for="Location">Location</label>
+                <input asp-for="Location" class="form-control" />
+                <span asp-validation-for="Location" class="text-warning"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="StartTime">Start time</label>
+                <input type="datetime-local" asp-for="StartTime" min="@DateTime.Now.ToString("yyyy-MM-ddTHH:mm")" class="form-control" />
+                <span asp-validation-for="StartTime" class="text-warning"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="EndTime">End time</label>
+                <input type="datetime-local" asp-for="EndTime" min="@DateTime.Now.AddHours(1).ToString("yyyy-MM-ddTHH:mm")" class="form-control" />
+                <span asp-validation-for="EndTime" class="text-warning"></span>
+            </div>
+
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+                <a asp-action="Index" class="btn btn-secondary">Back to list</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        const startInput = document.querySelector('#StartTime');
+        const endInput = document.querySelector('#EndTime');
+
+        function updateEndMin() {
+            if (startInput && endInput && startInput.value) {
+                const start = new Date(startInput.value);
+                const end = new Date(start.getTime() + 60 * 60 * 1000); // +1 hour
+                const formatted = end.toISOString().slice(0, 16); // "yyyy-MM-ddTHH:mm"
+                endInput.min = formatted;
+                if (!endInput.value || endInput.value < formatted) {
+                    endInput.value = formatted;
+                }
+            }
+        }
+
+        startInput?.addEventListener('change', updateEndMin);
+        window.addEventListener('DOMContentLoaded', updateEndMin);
+    </script>
+}
