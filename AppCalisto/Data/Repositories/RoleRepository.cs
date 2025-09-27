@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace AppCalisto.Data.Repositories
+namespace CustomerManagementPlatform.Data.Repositories
 {
     public class RoleRepository : IRoleRepository
     {

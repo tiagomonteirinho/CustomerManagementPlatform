@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 
-namespace AppCalisto.Data.Entities
+namespace CustomerManagementPlatform.Data.Entities
 {
     public class Budget
     {

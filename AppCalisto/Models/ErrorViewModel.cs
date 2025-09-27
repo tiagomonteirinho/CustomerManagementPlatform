@@ -1,4 +1,4 @@
-namespace AppCalisto.Models
+namespace CustomerManagementPlatform.Models
 {
     public class ErrorViewModel
     {

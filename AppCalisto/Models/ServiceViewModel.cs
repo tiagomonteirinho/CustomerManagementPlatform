@@ -1,7 +1,7 @@
-﻿using AppCalisto.Data.Entities;
+﻿using CustomerManagementPlatform.Data.Entities;
 using System.ComponentModel.DataAnnotations;
 
-namespace AppCalisto.Models
+namespace CustomerManagementPlatform.Models
 {
     public class ServiceViewModel
     {

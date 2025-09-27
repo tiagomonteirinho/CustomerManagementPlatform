@@ -1,9 +1,9 @@
-﻿using AppCalisto.Data.Entities;
+﻿using CustomerManagementPlatform.Data.Entities;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 
-namespace AppCalisto.Data
+namespace CustomerManagementPlatform.Data
 {
     public class DataContext : IdentityDbContext<User>
     {

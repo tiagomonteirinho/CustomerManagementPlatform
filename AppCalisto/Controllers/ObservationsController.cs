@@ -1,6 +1,6 @@
-﻿using AppCalisto.Data.Entities;
-using AppCalisto.Data.Repositories;
-using AppCalisto.Models;
+﻿using CustomerManagementPlatform.Data.Entities;
+using CustomerManagementPlatform.Data.Repositories;
+using CustomerManagementPlatform.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -10,7 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace AppCalisto.Controllers
+namespace CustomerManagementPlatform.Controllers
 {
     [Authorize(Roles = "Technician")]
     public class ObservationsController : Controller

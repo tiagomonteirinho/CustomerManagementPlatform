@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using System.Threading.Tasks;
-using AppCalisto.Data.Entities;
+using CustomerManagementPlatform.Data.Entities;
 using System.Collections.Generic;
-using AppCalisto.Models;
+using CustomerManagementPlatform.Models;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
-namespace AppCalisto.Data.Repositories
+namespace CustomerManagementPlatform.Data.Repositories
 {
     public interface IUserRepository
     {

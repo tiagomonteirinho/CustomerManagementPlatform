@@ -1,5 +1,5 @@
-﻿using AppCalisto.Data.Entities;
-using AppCalisto.Models;
+﻿using CustomerManagementPlatform.Data.Entities;
+using CustomerManagementPlatform.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace AppCalisto.Data.Repositories
+namespace CustomerManagementPlatform.Data.Repositories
 {
     public class UserRepository : IUserRepository
     {

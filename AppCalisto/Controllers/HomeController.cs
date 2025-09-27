@@ -1,8 +1,8 @@
-﻿using AppCalisto.Data.Repositories;
+﻿using CustomerManagementPlatform.Data.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
-namespace AppCalisto.Controllers
+namespace CustomerManagementPlatform.Controllers
 {
     public class HomeController : Controller
     {

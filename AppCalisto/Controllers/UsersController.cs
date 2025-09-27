@@ -1,7 +1,7 @@
-﻿using AppCalisto.Data.Entities;
-using AppCalisto.Data.Repositories;
-using AppCalisto.Helpers;
-using AppCalisto.Models;
+﻿using CustomerManagementPlatform.Data.Entities;
+using CustomerManagementPlatform.Data.Repositories;
+using CustomerManagementPlatform.Helpers;
+using CustomerManagementPlatform.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -12,7 +12,7 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace AppCalisto.Controllers
+namespace CustomerManagementPlatform.Controllers
 {
     [Authorize(Roles = "Admin")]
     public class UsersController : Controller

@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace AppCalisto.Migrations
+namespace CustomerManagementPlatform.Migrations
 {
     public partial class UpdateUsers_RemoveRoleField : Migration
     {

@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace AppCalisto.Data.Repositories
+namespace CustomerManagementPlatform.Data.Repositories
 {
     public interface IEntityRepository<T> where T : class
     {

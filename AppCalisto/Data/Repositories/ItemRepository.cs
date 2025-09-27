@@ -1,10 +1,10 @@
-﻿using AppCalisto.Data.Entities;
+﻿using CustomerManagementPlatform.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace AppCalisto.Data.Repositories
+namespace CustomerManagementPlatform.Data.Repositories
 {
     public class ItemRepository : EntityRepository<Item>, IItemRepository
     {

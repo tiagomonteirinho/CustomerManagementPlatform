@@ -1,8 +1,8 @@
-﻿using AppCalisto.Data.Entities;
+﻿using CustomerManagementPlatform.Data.Entities;
 using System.ComponentModel.DataAnnotations;
 using System;
 
-namespace AppCalisto.Models
+namespace CustomerManagementPlatform.Models
 {
     public class AppointmentViewModel
     {

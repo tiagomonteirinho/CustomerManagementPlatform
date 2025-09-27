@@ -2,7 +2,7 @@
 using MimeKit;
 using MailKit.Net.Smtp;
 
-namespace AppCalisto.Helpers
+namespace CustomerManagementPlatform.Helpers
 {
     public class MailHelper : IMailHelper
     {

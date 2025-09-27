@@ -1,13 +1,13 @@
-﻿using AppCalisto.Data.Repositories;
-using AppCalisto.Helpers;
-using AppCalisto.Models;
+﻿using CustomerManagementPlatform.Data.Repositories;
+using CustomerManagementPlatform.Helpers;
+using CustomerManagementPlatform.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace AppCalisto.Controllers
+namespace CustomerManagementPlatform.Controllers
 {
     public class AccountController : Controller
     {

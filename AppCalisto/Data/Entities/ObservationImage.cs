@@ -1,4 +1,4 @@
-﻿namespace AppCalisto.Data.Entities
+﻿namespace CustomerManagementPlatform.Data.Entities
 {
     public class ObservationImage
     {

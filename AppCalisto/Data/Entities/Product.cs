@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace AppCalisto.Data.Entities
+namespace CustomerManagementPlatform.Data.Entities
 {
     public class Product
     {

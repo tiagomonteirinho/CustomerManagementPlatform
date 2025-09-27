@@ -1,6 +1,6 @@
-﻿using AppCalisto.Data.Entities;
-using AppCalisto.Data.Repositories;
-using AppCalisto.Models;
+﻿using CustomerManagementPlatform.Data.Entities;
+using CustomerManagementPlatform.Data.Repositories;
+using CustomerManagementPlatform.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace AppCalisto.Controllers
+namespace CustomerManagementPlatform.Controllers
 {
     [Authorize(Roles = "Back-office")]
     public class OrdersController : Controller

@@ -1,9 +1,9 @@
-﻿using AppCalisto.Data.Entities;
+﻿using CustomerManagementPlatform.Data.Entities;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace AppCalisto.Models
+namespace CustomerManagementPlatform.Models
 {
     public class ItemViewModel
     {

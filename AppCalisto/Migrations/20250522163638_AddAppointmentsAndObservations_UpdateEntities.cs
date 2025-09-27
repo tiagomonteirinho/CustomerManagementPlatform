@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace AppCalisto.Migrations
+namespace CustomerManagementPlatform.Migrations
 {
     public partial class AddAppointmentsAndObservations_UpdateEntities : Migration
     {

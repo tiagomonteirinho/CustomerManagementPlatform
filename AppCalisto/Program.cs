@@ -1,9 +1,9 @@
-using AppCalisto.Data;
+using CustomerManagementPlatform.Data;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace AppCalisto
+namespace CustomerManagementPlatform
 {
     public class Program
     {

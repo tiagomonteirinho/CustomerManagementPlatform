@@ -2,7 +2,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace AppCalisto.Data.Repositories
+namespace CustomerManagementPlatform.Data.Repositories
 {
     public class EntityRepository<T> : IEntityRepository<T> where T : class
     {

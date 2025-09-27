@@ -1,9 +1,9 @@
-﻿using AppCalisto.Data.Entities;
+﻿using CustomerManagementPlatform.Data.Entities;
 using Microsoft.AspNetCore.Http;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace AppCalisto.Models
+namespace CustomerManagementPlatform.Models
 {
     public class ObservationViewModel
     {

@@ -1,4 +1,4 @@
-﻿namespace AppCalisto.Helpers
+﻿namespace CustomerManagementPlatform.Helpers
 {
     public interface IMailHelper
     {

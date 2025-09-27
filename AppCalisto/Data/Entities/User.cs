@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace AppCalisto.Data.Entities
+namespace CustomerManagementPlatform.Data.Entities
 {
     public class User : IdentityUser
     {

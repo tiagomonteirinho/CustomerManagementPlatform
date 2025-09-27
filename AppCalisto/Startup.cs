@@ -1,7 +1,7 @@
-using AppCalisto.Data;
-using AppCalisto.Data.Entities;
-using AppCalisto.Data.Repositories;
-using AppCalisto.Helpers;
+using CustomerManagementPlatform.Data;
+using CustomerManagementPlatform.Data.Entities;
+using CustomerManagementPlatform.Data.Repositories;
+using CustomerManagementPlatform.Helpers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -12,7 +12,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
-namespace AppCalisto
+namespace CustomerManagementPlatform
 {
     public class Startup
     {

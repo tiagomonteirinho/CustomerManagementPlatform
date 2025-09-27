@@ -1,8 +1,8 @@
-﻿using AppCalisto.Models;
+﻿using CustomerManagementPlatform.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
-namespace AppCalisto.Controllers
+namespace CustomerManagementPlatform.Controllers
 {
     public class ErrorsController : Controller
     {

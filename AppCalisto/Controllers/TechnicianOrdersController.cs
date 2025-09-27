@@ -1,9 +1,9 @@
-﻿using AppCalisto.Data.Repositories;
+﻿using CustomerManagementPlatform.Data.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
-namespace AppCalisto.Controllers
+namespace CustomerManagementPlatform.Controllers
 {
     [Authorize(Roles = "Technician")]
     public class TechnicianOrdersController : Controller

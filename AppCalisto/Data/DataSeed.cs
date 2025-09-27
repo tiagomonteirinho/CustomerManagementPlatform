@@ -1,5 +1,5 @@
-﻿using AppCalisto.Data.Entities;
-using AppCalisto.Data.Repositories;
+﻿using CustomerManagementPlatform.Data.Entities;
+using CustomerManagementPlatform.Data.Repositories;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace AppCalisto.Data
+namespace CustomerManagementPlatform.Data
 {
     public class DataSeed
     {
@@ -126,7 +126,7 @@ namespace AppCalisto.Data
             {
                 var seedCompanies = new List<Company>
                 {
-                    new Company { Name = "Singela Vertente Unipessoal, Lda", Abbreviation = "SINGV" },
+                    new Company { Name = "Company 1", Abbreviation = "COMP1" },
                     new Company { Name = "Company 2", Abbreviation = "COMP2" }
                 };
 
@@ -141,10 +141,10 @@ namespace AppCalisto.Data
             {
                 var seedServices = new List<Service>
                 {
-                    new Service { Name = "PT Informática", Abbreviation = "PTINF", CompanyId = 1 },
-                    new Service { Name = "Global Eletrik", Abbreviation = "ELETR", CompanyId = 1 },
-                    new Service { Name = "Eficaz", Abbreviation = "EFICZ", CompanyId = 1 },
-                    new Service { Name = "Singela Vertente Unipessoal, Lda", Abbreviation = "SINGV", CompanyId = 1 },
+                    new Service { Name = "COMP1 Service 1", Abbreviation = "C1SV1", CompanyId = 1 },
+                    new Service { Name = "COMP1 Service 2", Abbreviation = "C1SV2", CompanyId = 1 },
+                    new Service { Name = "COMP1 Service 3", Abbreviation = "C1SV3", CompanyId = 1 },
+                    new Service { Name = "COMP1 Service 4", Abbreviation = "C1SV4", CompanyId = 1 },
                     new Service { Name = "Company 2", Abbreviation = "COMP2", CompanyId = 2 },
                 };
 
