@@ -14,6 +14,6 @@ namespace AppCalisto.Data.Entities
         [Required, MaxLength(99)]
         public string Name { get; set; }
 
-        public ICollection<Service> Services { get; set; }
+        public ICollection<Service> Services { get; set; } = new List<Service>();
     }
 }

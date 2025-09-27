@@ -65,12 +65,16 @@ namespace AppCalisto.Data.Repositories
 
         public async Task<User> GetByEmailAsync(string email)
         {
-            return await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            return await _context.Users
+                .Include(u => u.Notifications)
+                .FirstOrDefaultAsync(u => u.Email == email);
         }
 
         public async Task<User> GetByIdAsync(string id)
         {
-            return await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
+            return await _context.Users
+                .Include(u => u.Notifications)
+                .FirstOrDefaultAsync(u => u.Id == id);
         }
 
         public async Task<IdentityResult> CreateAsync(User user, string password)

@@ -68,5 +68,7 @@ namespace AppCalisto.Data
         public DbSet<Product> Products { get; set; }
 
         public DbSet<Item> Items { get; set; }
+
+        public DbSet<Notification> Notifications { get; set; }
     }
 }

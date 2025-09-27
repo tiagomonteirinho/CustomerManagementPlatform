@@ -28,6 +28,6 @@ namespace AppCalisto.Data.Entities
         [MaxLength(15)]
         public string Tin { get; set; }
 
-        public ICollection<Order> Orders { get; set; }
+        public ICollection<Order> Orders { get; set; } = new List<Order>();
     }
 }

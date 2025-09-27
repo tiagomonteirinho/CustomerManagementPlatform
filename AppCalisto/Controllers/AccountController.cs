@@ -20,10 +20,16 @@ namespace AppCalisto.Controllers
             _mailHelper = mailHelper;
         }
 
+        public async Task<IActionResult> Dashboard()
+        {
+            var user = await _userRepository.GetByEmailAsync(User.Identity.Name);
+            return View(user);
+        }
+
         public IActionResult Login()
         {
             if (User.Identity.IsAuthenticated)
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction("Dashboard");
 
             return View();
         }
@@ -51,7 +57,7 @@ namespace AppCalisto.Controllers
                 return View(model);
             }
 
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Dashboard");
         }
 
         public async Task<IActionResult> Logout()

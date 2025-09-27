@@ -10,6 +10,8 @@ namespace AppCalisto.Data.Entities
         [Required, MaxLength(99)]
         public string Name { get; set; }
 
+        public ICollection<Notification> Notifications { get; set; } = new List<Notification>();
+
         [NotMapped]
         public IEnumerable<string> Roles { get; set; }
     }

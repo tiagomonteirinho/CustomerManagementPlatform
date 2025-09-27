@@ -69,6 +69,7 @@ namespace AppCalisto
             services.AddScoped<IObservationRepository, ObservationRepository>();
             services.AddScoped<IAppointmentRepository, AppointmentRepository>(); 
             services.AddScoped<IItemRepository, ItemRepository>();
+            services.AddScoped<INotificationRepository, NotificationRepository>();
             services.AddScoped<IMailHelper, MailHelper>();
 
             services.ConfigureApplicationCookie(cfg =>

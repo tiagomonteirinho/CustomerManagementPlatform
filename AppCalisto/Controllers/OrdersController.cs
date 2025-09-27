@@ -20,8 +20,9 @@ namespace AppCalisto.Controllers
         private readonly IUserRepository _userRepository;
         private readonly IObservationRepository _observationRepository;
         private readonly IBudgetRepository _budgetRepository;
+        private readonly INotificationRepository _notificationRepository;
 
-        public OrdersController(IOrderRepository orderRepository, IClientRepository clientRepository, ICompanyRepository companyRepository, IServiceRepository serviceRepository, IUserRepository userRepository, IObservationRepository observationRepository, IBudgetRepository budgetRepository)
+        public OrdersController(IOrderRepository orderRepository, IClientRepository clientRepository, ICompanyRepository companyRepository, IServiceRepository serviceRepository, IUserRepository userRepository, IObservationRepository observationRepository, IBudgetRepository budgetRepository, INotificationRepository notificationRepository)
         {
             _orderRepository = orderRepository;
             _clientRepository = clientRepository;
@@ -30,6 +31,7 @@ namespace AppCalisto.Controllers
             _userRepository = userRepository;
             _observationRepository = observationRepository;
             _budgetRepository = budgetRepository;
+            _notificationRepository = notificationRepository;
         }
 
         public IActionResult GetCompanyServices(int companyId)
@@ -105,6 +107,17 @@ namespace AppCalisto.Controllers
                 TempData["Failure"] = "Could not create order.";
                 return View(await BuildCreateOrderViewModelAsync(model.ClientId));
             }
+
+            var notification = new Notification
+            {
+                Title = "New order",
+                Message = "A new order has been assigned to you.",
+                UserId = order.TechnicianId
+            };
+
+            await _notificationRepository.CreateAsync(notification);
+            notification.Action = $"<a href=\"{Url.Action("Details", "TechnicianOrders", new { id = order.Id })}\" class=\"btn btn-primary\">Take me there</a>";
+            await _notificationRepository.UpdateAsync(notification);
 
             TempData["Success"] = "Order created successfully!";
             return RedirectToAction("Create", new { clientId = model.ClientId });
